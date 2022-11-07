@@ -5,9 +5,13 @@
 #define FALSE 0
 
 #define ERROR -1
+#define TABLE -2
 #define END_OF_FILE 0
-#define INTEGER 1
+#define BLANK 1
+#define IDENTIFIER 2
 
-
+typedef enum NodeType{
+    ADD, SUB, MUL, DIV, NEG, ID, INTEGER
+};
 void printAST();
 void printSymbol();

@@ -5,28 +5,33 @@
 extern int yylex();
 extern int yylineno;
 extern char* yytext;
+typedef union Value{
+    int integer;
+    float real;
+    char* string;
+    char type;
+}Value;
+typedef struct TreeNode {
+    char type;
+    Value value;
+}TreeNode;
 
 char symbol_table[MAX_TABLE_SIZE][3][MAX_TOKEN_SIZE] = { NULL, };
 char token[MAX_TOKEN_SIZE] = { NULL, };
 
 int main(void){
     int token_type = 0;
+    printf(">");
     while(TRUE){
-        printf("> ");
-        token_type = yylex();
-        switch(token_type){
-            case INTEGER:
-                printf("token : %s %d", yytext, token_type);
-                break;
-            case ERROR:
-                printf("Syntax error in line %d, Expected an identifier but found %s\n", yylineno, yytext);
-                break;
-            case END_OF_FILE:
-                return 0;
-            default:
-                break;
+        if((token_type = yylex()) == END_OF_FILE){
+            break;
+        }
+        printf(">");
+        if((token_type = yylex()) == END_OF_FILE){
+            break;
         }
     }
+ 
     return 0;
 }
 
