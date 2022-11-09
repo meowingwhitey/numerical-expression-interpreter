@@ -1,0 +1,4 @@
+*.out
+lex-sample/
+.vscode/
+*.o
