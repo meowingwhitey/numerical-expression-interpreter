@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include "parser.h"
+#include "queue.h"
 
 extern int yylex();
 extern int yylineno;
@@ -10,20 +11,26 @@ extern char* yytext;
 Token lookahead;
 Symbol* symbol_table[MAX_TABLE_SIZE];
 int symbol_table_size = 0;
+Node* ast;
 
 int main(void){
-    Node* ast;
     while(TRUE){
         printf(">");
         scanToken();
+        if(yytext[0] == '\n'){
+            continue;
+        }
         if(lookahead.type == END_OF_FILE){
             break;
         }
         ast = expr();
+        printf("[*] AST: 0x%X, %d\n", ast, ast->token.type);
+        printf("%d %d :%d %d\n",ast->left->token.type, ast->left->token.value.integer, ast->right->token.type, ast->right->token.value.integer);
+        //printAST(ast, 0);
         if(ast == NULL){
             syntaxError();
         }
-        Value result = eval(ast);
+        //printf("%s\n", eval());
     } 
     finalize();
     return 0;
@@ -32,33 +39,36 @@ int main(void){
 Node* expr(){
     printf("%s: %s\n", "E", yytext);
     Node* t = term();
-    Node* re = restExpr();
     if(t == NULL){
         return NULL;
     }
+    //printf("[*] TERM: 0x%X, %d\n", t, t->token.type);
+    Node* re = restExpr();
     if(re == NULL){
         return t;
     }
     re->left = t;
+    //printf("[*] RE: 0x%X, %d\n", re, re->token.type);
     return re;
 }
 
 Node* restExpr(){
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
         printf("%s: %s\n", "E\'", yytext);
-        Node* temp = createNode(lookahead);
+        Node* op = createNode(lookahead);
         scanToken();
-        Node* t = factor();
+        Node* t = term();
         if(t == NULL){
             return NULL;
         }
-        temp->right = t;
         Node* re = restExpr();
         if(re == NULL){
-            return temp;
+            op->right = t;
+            return op;
         }
-        re->left = temp;
-        return re;
+        re->left = t;
+        op->right = re;
+        return op;
     }
     else return NULL;
 }
@@ -69,30 +79,33 @@ Node* term(){
     if(f == NULL){
         return NULL;
     }
+    //printf("[*] FACTOR: 0x%X, %d\n", f, f->token.type);
     Node* rt = restTerm();
     if(rt == NULL){
-        return NULL;
+        return f;
     }
     rt->left = f;
+    //printf("[*] RT: 0x%X, %d\n", rt, rt->token.type);
     return rt;
 }
 
 Node* restTerm(){
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
         printf("%s: %s\n", "T\'", yytext);
-        Node* temp = createNode(lookahead);
+        Node* op = createNode(lookahead);
         scanToken();
         Node* f = factor();
         if(f == NULL){
             return NULL;
         }
-        temp->right = f;
         Node* rt = restTerm();
         if(rt == NULL){
-            return temp;
+            op->right = f;
+            return op;
         }
-        rt->left = temp;
-        return rt;
+        rt->left = f;
+        op->right = rt;
+        return op;
     }
     else return NULL;
 }
@@ -114,13 +127,15 @@ Node* createNode(Token token){
     return temp;
 }
 
-/* root 노드를 받고 eval 후 결과를 Value에 담아 반환 */
-Value eval(Node* root){
+/* ast 노드를 받고 eval 후 결과를 문자열 형식으로 반환 */
+char* eval(){
 
 }
 
 void scanToken(){
-    lookahead.type = yylex();
+    lookahead.type = yylex();    
+    //printf("[*]lexem: %s\n", yytext);
+    //printf("[*]yylex\n");
     switch(lookahead.type){
         case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV:
             lookahead.value.operator = yytext[0];
@@ -149,7 +164,43 @@ void syntaxError(){
 }
 
 void printAST(){
-    printf("[*] printAST\n");
+    if(ast == NULL){
+        return;
+    }
+    Queue* head = initQueue();
+    Node* cur = ast;
+	enqueue(head, cur);
+	while (isEmpty(head) == FALSE) {
+        printf("[*] head->next 0x%X \n", head->next);
+        cur = dequeue(head);
+        printf("[*] cur->token.type 0x%X \n", cur->token.type);
+        printf("[*] cur 0x%X \n", cur);
+		if (cur->left != NULL)	
+            enqueue(head, cur->left);
+		if (cur->right != NULL)	
+            enqueue(head, cur->right);
+	}
+    /*
+    switch(token.type){
+        case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV:
+            printf("%c\t", token.value.operator);
+            break;
+        case TOKEN_ID:
+            printf("%s\t", token.value.id);
+            break;
+        case TOKEN_STRING:
+            printf("%s\t", token.value.string);
+            break;
+        case TOKEN_INTEGER:
+            printf("%d\t", token.value.integer);
+            break;
+        case TOKEN_REAL:
+            printf("%lf\t", token.value.real);
+            break;
+        default:
+            break;
+    }
+    */
 }
 
 void printSymbol(){

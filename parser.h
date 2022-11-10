@@ -1,21 +1,23 @@
 /* 
 * E -> T E' => T + TE' | T - TE'
-* E' -> + T E' | ε 
+* E' -> + T E' | ε => E' -> + T + T E'
 * T -> F T' => T -> F * F T'
 * T' -> * F T' | ε => T' -> * F * F T'
 * F -> Int | Real
 */
-
+#pragma once
 #define MAX_TABLE_SIZE 100
 #define MAX_TOKEN_SIZE 1000
 
 #define TRUE 1
 #define FALSE 0
 #define ERROR -1
+#define BLANK 1
 #define END_OF_FILE 0
 
 typedef enum TokenType{
-    TOKEN_ADD = 10, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_NEG, TOKEN_ID, TOKEN_INTEGER, TOKEN_REAL, TOKEN_STRING
+    TOKEN_ADD = 10, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_NEG
+    , TOKEN_ID, TOKEN_INTEGER, TOKEN_REAL, TOKEN_STRING
 }TokenType;
 
 typedef union Value{
@@ -49,7 +51,8 @@ Node* restTerm();
 Node* factor();
 
 Node* createNode();
-Value eval(Node* root);
+
+char* eval();
 
 void scanToken();
 void syntaxError();
