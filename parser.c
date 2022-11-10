@@ -25,7 +25,7 @@ int main(void){
         }
         ast = expr();
         printf("[*] AST: 0x%X, %d\n", ast, ast->token.type);
-        printf("%d %d :%d %d\n",ast->left->token.type, ast->left->token.value.integer, ast->right->token.type, ast->right->token.value.integer);
+        //printf("%d %d :%d %d\n",ast->left->token.type, ast->left->token.value.integer, ast->right->token.type, ast->right->token.value.integer);
         //printAST(ast, 0);
         if(ast == NULL){
             syntaxError();
@@ -52,7 +52,7 @@ Node* expr(){
     return re;
 }
 
-Node* restExpr(Node* prev){
+Node* restExpr(Node* _t){
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
         printf("%s: %s\n", "E\'", yytext);
         Node* op = createNode(lookahead);
@@ -62,13 +62,12 @@ Node* restExpr(Node* prev){
             return NULL;
         }
         Node* re = restExpr(t);
+        op->left = _t;
+        op->right = t;
         if(re == NULL){
-            op->right = t;
             return op;
         }
-        op->right = t;
         re->left = op;
-        op->left = prev;
         return re;
     }
     else return NULL;
@@ -90,7 +89,7 @@ Node* term(){
     return rt;
 }
 
-Node* restTerm(Node* prev){
+Node* restTerm(Node* _f){
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
         printf("%s: %s\n", "T\'", yytext);
         Node* op = createNode(lookahead);
@@ -100,13 +99,12 @@ Node* restTerm(Node* prev){
             return NULL;
         }
         Node* rt = restTerm(f);
+        op->left = _f;
+        op->right = f;
         if(rt == NULL){
-            op->right = f;
             return op;
         }
-        op->right = f;
         rt->left = op;
-        op->left = prev;
         return rt;
     }
     else return NULL;
