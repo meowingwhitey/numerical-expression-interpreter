@@ -171,36 +171,36 @@ void printAST(){
     Node* cur = ast;
 	enqueue(head, cur);
 	while (isEmpty(head) == FALSE) {
-        printf("[*] head->next 0x%X \n", head->next);
+        //printf("[*] head->next 0x%X \n", head->next);
         cur = dequeue(head);
         printf("[*] cur->token.type 0x%X \n", cur->token.type);
-        printf("[*] cur 0x%X \n", cur);
+        //printf("[*] cur 0x%X \n", cur);
+        Token token = cur->token;
+        switch(token.type){
+            case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV:
+                printf("%c\t", token.value.operator);
+                break;
+            case TOKEN_ID:
+                printf("%s\t", token.value.id);
+                break;
+            case TOKEN_STRING:
+                printf("%s\t", token.value.string);
+                break;
+            case TOKEN_INTEGER:
+                printf("%d\t", token.value.integer);
+                break;
+            case TOKEN_REAL:
+                printf("%lf\t", token.value.real);
+                break;
+            default:
+                break;
+        }
 		if (cur->left != NULL)	
             enqueue(head, cur->left);
 		if (cur->right != NULL)	
             enqueue(head, cur->right);
 	}
-    /*
-    switch(token.type){
-        case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV:
-            printf("%c\t", token.value.operator);
-            break;
-        case TOKEN_ID:
-            printf("%s\t", token.value.id);
-            break;
-        case TOKEN_STRING:
-            printf("%s\t", token.value.string);
-            break;
-        case TOKEN_INTEGER:
-            printf("%d\t", token.value.integer);
-            break;
-        case TOKEN_REAL:
-            printf("%lf\t", token.value.real);
-            break;
-        default:
-            break;
-    }
-    */
+    printf("\n");
 }
 
 void printSymbol(){
