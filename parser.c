@@ -43,16 +43,16 @@ Node* expr(){
         return NULL;
     }
     //printf("[*] TERM: 0x%X, %d\n", t, t->token.type);
-    Node* re = restExpr();
+    Node* re = restExpr(t);
     if(re == NULL){
         return t;
     }
-    re->left = t;
+    //re->left = t;
     //printf("[*] RE: 0x%X, %d\n", re, re->token.type);
     return re;
 }
 
-Node* restExpr(){
+Node* restExpr(Node* prev){
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
         printf("%s: %s\n", "E\'", yytext);
         Node* op = createNode(lookahead);
@@ -61,14 +61,15 @@ Node* restExpr(){
         if(t == NULL){
             return NULL;
         }
-        Node* re = restExpr();
+        Node* re = restExpr(t);
         if(re == NULL){
             op->right = t;
             return op;
         }
-        re->left = t;
-        op->right = re;
-        return op;
+        op->right = t;
+        re->left = op;
+        op->left = prev;
+        return re;
     }
     else return NULL;
 }
@@ -80,16 +81,16 @@ Node* term(){
         return NULL;
     }
     //printf("[*] FACTOR: 0x%X, %d\n", f, f->token.type);
-    Node* rt = restTerm();
+    Node* rt = restTerm(f);
     if(rt == NULL){
         return f;
     }
-    rt->left = f;
+    //rt->left = f;
     //printf("[*] RT: 0x%X, %d\n", rt, rt->token.type);
     return rt;
 }
 
-Node* restTerm(){
+Node* restTerm(Node* prev){
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
         printf("%s: %s\n", "T\'", yytext);
         Node* op = createNode(lookahead);
@@ -98,14 +99,15 @@ Node* restTerm(){
         if(f == NULL){
             return NULL;
         }
-        Node* rt = restTerm();
+        Node* rt = restTerm(f);
         if(rt == NULL){
             op->right = f;
             return op;
         }
-        rt->left = f;
-        op->right = rt;
-        return op;
+        op->right = f;
+        rt->left = op;
+        op->left = prev;
+        return rt;
     }
     else return NULL;
 }
