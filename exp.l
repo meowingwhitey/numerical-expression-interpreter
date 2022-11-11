@@ -9,17 +9,20 @@
 "-" { /* SUB */ return TOKEN_SUB; }
 "*" { /* MUL */ return TOKEN_MUL; }
 "/" { /* DIV */ return TOKEN_DIV; }
-[a-zA-Z]+[0-9]* { /* IDENTIFIER */ return TOKEN_ID; }
+"(" { /* LP */ return TOKEN_LP; }
+")" { /* RP */ return TOKEN_RP; }
+"," { /* COMMA */ return TOKEN_COMMA; }
+"sub" { /*SUB STRING*/ return TOKEN_SUB_STRING; }
 [0-9]*[.][0-9]+   { /* REAL */ return TOKEN_REAL; }
 0|[1-9][0-9]*   { /* INTEGER */ return TOKEN_INTEGER; }
-[_A-Za-z]+[_A-Za-z0-9]* { return TOKEN_ID; }
-\"[A-Za-z]*\" { return TOKEN_STRING; }
+[_A-Za-z]+[_A-Za-z0-9]* { /* IDENTIFIER */ return TOKEN_ID; }
+\"[A-Za-z]*\" { /* STRING */return TOKEN_STRING; }
 \$ast { printAST(ast); }
 \$symbol { printSymbol(); }
 \n { return BLANK; }
 [ \n\t] ;
 <<EOF>> { return END_OF_FILE; }
-. { printf("Lexical Error in line %d\n", yylineno); return ERROR; }
+. { printf("Lexical Error in line %d.\n", yylineno); return ERROR; }
 
 %%
 int yywrap(void){

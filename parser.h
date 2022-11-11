@@ -5,6 +5,17 @@
 * T' -> * F T' | ε => T' -> * F * F T'
 * F -> Int | Real
 */
+/*
+    A -> id A' | F' T' E' 
+    A' -> = A | T' E’
+    E -> TE’// 아래 sub에서 사용해서 다시 추가 
+    E' -> + T E‘ | - F T' | ε 
+    T -> F T' 
+    T' -> * F T' | / F T' | ε 
+    F -> id | F'
+    F' -> ( A ) | inum | fnum | S | - F | sub(S , E, E)
+    S -> str
+*/
 #pragma once
 #define MAX_TABLE_SIZE 100
 #define MAX_TOKEN_SIZE 1000
@@ -17,8 +28,10 @@
 #define END_OF_FILE 0
 
 typedef enum TokenType{
-    TOKEN_ADD = 10, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_NEG, TOKEN_PLUS, 
-    TOKEN_ASSIGN, TOKEN_SUB_STRING, TOKEN_ID, TOKEN_INTEGER, TOKEN_REAL, TOKEN_STRING, 
+    TOKEN_ADD = 10, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV,
+    TOKEN_NEG, TOKEN_PLUS, TOKEN_ASSIGN, 
+    TOKEN_LP, TOKEN_RP, TOKEN_COMMA, TOKEN_SUB_STRING, 
+    TOKEN_ID, TOKEN_INTEGER, TOKEN_REAL, TOKEN_STRING, 
 }TokenType;
 
 typedef union Value{
@@ -45,11 +58,16 @@ typedef struct Symbol {
     Token token;
 }Symbol;
 
+/* Grammers */
+Node* all();
+Node* restAll();
 Node* expr();
 Node* restExpr();
 Node* term();
 Node* restTerm();
 Node* factor();
+Node* restFactor();
+Node* string();
 
 Node* createNode();
 
