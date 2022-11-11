@@ -363,39 +363,44 @@ void runtimeError(){
     printf("Runtime error in line %d \n", yylineno - 1);
 }
 void printAST(Node* ast){
+    int queueSize = 0;
     if(ast == NULL){
         return;
     }
     Queue* head = initQueue();
     Node* cur = ast;
-	enqueue(head, cur);
+	enqueue(head, cur); queueSize ++;
 	while (isEmpty(head) == FALSE) {
-        //printf("[*] head->next 0x%X \n", head->next);
-        cur = dequeue(head);
-        //printf("[*] cur->token.type 0x%X \n", cur->token.type);
-        //printf("[*] cur 0x%X \n", cur);
-        Token token = cur->token;
-        switch(token.type){
-            case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV:
-                printf("%c\t", token.value.operator); break;
-            case TOKEN_ID:
-                printf("%s\t", token.value.id); break;
-            case TOKEN_STRING:
-                printf("%s\t", token.value.string); break;
-            case TOKEN_INTEGER:
-                printf("%d\t", token.value.integer); break;
-            case TOKEN_REAL:
-                printf("%lf\t", token.value.real); break;
-            default: break;
+        int nodeCount = queueSize;
+        while(nodeCount > 0){  
+            int child_num = 0;
+            cur = dequeue(head); queueSize --;
+            Token token = cur->token;
+            switch(token.type){
+                case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV:
+                    if(cur->left != NULL){ child_num ++; }
+                    if(cur->right != NULL){ child_num ++; }
+                    printf("%c%d  ", token.value.operator, child_num); child_num = 0; break;
+                case TOKEN_ID:
+                    printf("%s  ", token.value.id); break;
+                case TOKEN_STRING:
+                    printf("%s  ", token.value.string); break;
+                case TOKEN_INTEGER:
+                    printf("%d  ", token.value.integer); break;
+                case TOKEN_REAL:
+                    printf("%lf  ", token.value.real); break;
+                default: break;
+            }
+            if (cur->left != NULL)	{
+                enqueue(head, cur->left); queueSize ++;
+            }
+            if (cur->right != NULL){
+                enqueue(head, cur->right); queueSize ++;
+            }
+            nodeCount--;
         }
-		if (cur->left != NULL)	{
-            enqueue(head, cur->left);
-        }
-		if (cur->right != NULL){
-            enqueue(head, cur->right);
-        }
+        printf("\n");
 	}
-    printf("\n");
 }
 
 void printSymbol(){
