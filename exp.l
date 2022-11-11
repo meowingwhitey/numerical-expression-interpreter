@@ -14,7 +14,7 @@
 0|[1-9][0-9]*   { /* INTEGER */ return TOKEN_INTEGER; }
 [_A-Za-z]+[_A-Za-z0-9]* { return TOKEN_ID; }
 \"[A-Za-z]*\" { return TOKEN_STRING; }
-\$ast { printAST(); }
+\$ast { printAST(ast); }
 \$symbol { printSymbol(); }
 \n { return BLANK; }
 [ \n\t] ;

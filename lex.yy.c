@@ -833,7 +833,7 @@ YY_RULE_SETUP
 case 10:
 YY_RULE_SETUP
 #line 17 "exp.l"
-{ printAST(); }
+{ printAST(ast); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
