@@ -8,6 +8,7 @@
 #pragma once
 #define MAX_TABLE_SIZE 100
 #define MAX_TOKEN_SIZE 1000
+#define MAX_LINE_LENGTH 1000
 
 #define TRUE 1
 #define FALSE 0
@@ -16,8 +17,8 @@
 #define END_OF_FILE 0
 
 typedef enum TokenType{
-    TOKEN_ADD = 10, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_NEG
-    , TOKEN_ID, TOKEN_INTEGER, TOKEN_REAL, TOKEN_STRING
+    TOKEN_ADD = 10, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_NEG, TOKEN_PLUS, 
+    TOKEN_ASSIGN, TOKEN_SUB_STRING, TOKEN_ID, TOKEN_INTEGER, TOKEN_REAL, TOKEN_STRING, 
 }TokenType;
 
 typedef union Value{
@@ -52,7 +53,14 @@ Node* factor();
 
 Node* createNode();
 
-char* eval();
+void printEval();
+Token evalRecursive(Node* cur);
+Token evalAdd(Token lval, Token rval);
+Token evalSub(Token lval, Token rval);
+Token evalMul(Token lval, Token rval);
+Token evalDiv(Token lval, Token rval);
+Token evalAssign(Token lval, Token rval);
+Token subString(Token string, Token sp, Token ep);
 
 void scanToken();
 void syntaxError();

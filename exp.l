@@ -12,11 +12,13 @@
 [a-zA-Z]+[0-9]* { /* IDENTIFIER */ return TOKEN_ID; }
 [0-9]*[.][0-9]+   { /* REAL */ return TOKEN_REAL; }
 0|[1-9][0-9]*   { /* INTEGER */ return TOKEN_INTEGER; }
+[_A-Za-z]+[_A-Za-z0-9]* { return TOKEN_ID; }
+\"[A-Za-z]*\" { return TOKEN_STRING; }
+\$ast { printAST(); }
+\$symbol { printSymbol(); }
 \n { return BLANK; }
 [ \n\t] ;
 <<EOF>> { return END_OF_FILE; }
-\$ast { printAST(); }
-\$symbol { printSymbol(); }
 . { printf("Lexical Error in line %d\n", yylineno); return ERROR; }
 
 %%

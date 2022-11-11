@@ -17,6 +17,7 @@ int main(void){
     while(TRUE){
         printf(">");
         scanToken();
+        fflush(stdin);
         if(yytext[0] == '\n'){
             continue;
         }
@@ -24,13 +25,12 @@ int main(void){
             break;
         }
         ast = expr();
-        printf("[*] AST: 0x%X, %d\n", ast, ast->token.type);
-        //printf("%d %d :%d %d\n",ast->left->token.type, ast->left->token.value.integer, ast->right->token.type, ast->right->token.value.integer);
-        //printAST(ast, 0);
+        printAST();
         if(ast == NULL){
             syntaxError();
+            continue;
         }
-        //printf("%s\n", eval());
+        printEval();
     } 
     finalize();
     return 0;
@@ -127,11 +127,185 @@ Node* createNode(Token token){
     return temp;
 }
 
-/* ast 노드를 받고 eval 후 결과를 문자열 형식으로 반환 */
-char* eval(){
+/* 연산 후 결과를 문자열 형식으로 반환 */
+void printEval(){
+    Token result = evalRecursive(ast);
+    printf("printEval: %d\n", result.type);
+    switch(result.type){
+        case TOKEN_INTEGER: printf("%d\n", result.value.integer); break;
+        case TOKEN_REAL: printf("%lf\n", result.value.real); break;
+        case TOKEN_STRING: printf("%s\n", result.value.string); break;
+        default: runtimeError(); break;
+    }
+}
+/* 연산을 위한 Recursive 함수 */
+Token evalRecursive(Node* cur){
+    Token result;
+    result.type = ERROR;
+    if(cur == NULL){
+        return result;
+    }
+    Token val = cur->token;
+    if(val.type == TOKEN_INTEGER || val.type == TOKEN_REAL || val.type == TOKEN_STRING){
+        //printf("========evalRecursive========\n");
+        //printf("[*] value: %d\n", val.value.integer);
+        return val;
+    }
+    Token lval = evalRecursive(cur->left);
+    Token rval = evalRecursive(cur->right);
+    /*
+    printf("=========evalRecursive=======\n");
+    printf("[*] token: %d\n", val.type);
+    printf("[*] lval: %d, rval: %d\n", lval.type, rval.type);
+    */
+    /* 연산 케이스 별로 나눠서 진행 */
+    switch(val.type){
+        case TOKEN_ADD: result = evalAdd(lval, rval); break;
+        case TOKEN_SUB: result = evalSub(lval, rval); break;
+        case TOKEN_MUL: result = evalMul(lval, rval); break;
+        case TOKEN_DIV: result = evalDiv(lval, rval); break;
+        case TOKEN_ASSIGN: result = evalAssign(lval, rval); break;
+        case TOKEN_SUB_STRING: result = subString(val, lval, rval); break;
+        default: break;
+    }
+    printf("[*] result: %d\n", result.value.integer);
+    return result;
+}
+Token evalAdd(Token lval, Token rval){
+    Token result;
+    /*
+    printf("======evalAdd======\n");
+    printf("[*] lval: %d, rval: %d\n", lval.value.integer, rval.value.integer);
+    printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
+    */
+    if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_INTEGER){
+        result.type = TOKEN_INTEGER;
+        result.value.integer = lval.value.integer + rval.value.integer;
+    }
+    else if(lval.type == TOKEN_REAL && rval.type == TOKEN_REAL){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.real + rval.value.real;
+    }
+    else if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_REAL){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.integer + rval.value.real;
+    }
+    else if(lval.type == TOKEN_REAL && rval.type == TOKEN_INTEGER){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.real + rval.value.integer;
+    }
+    else{
+        result.type = ERROR;
+        //runtimeError();
+        return result;
+    }
+    //printf("[*] result: %d\n", result.value.integer);
+    return result;
+}
+
+Token evalSub(Token lval, Token rval){
+    Token result;
+    /*
+    printf("======evalAdd======\n");
+    printf("[*] lval: %d, rval: %d\n", lval.value.integer, rval.value.integer);
+    printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
+    */
+    if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_INTEGER){
+        result.type = TOKEN_INTEGER;
+        result.value.integer = lval.value.integer - rval.value.integer;
+    }
+    else if(lval.type == TOKEN_REAL && rval.type == TOKEN_REAL){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.real - rval.value.real;
+    }
+    else if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_REAL){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.integer - rval.value.real;
+    }
+    else if(lval.type == TOKEN_REAL && rval.type == TOKEN_INTEGER){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.real - rval.value.integer;
+    }
+    else{
+        result.type = ERROR;
+        //runtimeError();
+        return result;
+    }
+    //printf("[*] result: %d\n", result.value.integer);
+    return result;
+}
+
+Token evalMul(Token lval, Token rval){
+    Token result;
+    /*
+    printf("======evalAdd======\n");
+    printf("[*] lval: %d, rval: %d\n", lval.value.integer, rval.value.integer);
+    printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
+    */
+    if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_INTEGER){
+        result.type = TOKEN_INTEGER;
+        result.value.integer = lval.value.integer * rval.value.integer;
+    }
+    else if(lval.type == TOKEN_REAL && rval.type == TOKEN_REAL){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.real * rval.value.real;
+    }
+    else if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_REAL){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.integer * rval.value.real;
+    }
+    else if(lval.type == TOKEN_REAL && rval.type == TOKEN_INTEGER){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.real * rval.value.integer;
+    }
+    else{
+        result.type = ERROR;
+        //runtimeError();
+        return result;
+    }
+    //printf("[*] result: %d\n", result.value.integer);
+    return result;
+}
+
+Token evalDiv(Token lval, Token rval){
+    Token result;
+    /*
+    printf("======evalAdd======\n");
+    printf("[*] lval: %d, rval: %d\n", lval.value.integer, rval.value.integer);
+    printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
+    */
+    if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_INTEGER){
+        result.type = TOKEN_INTEGER;
+        result.value.integer = lval.value.integer / rval.value.integer;
+    }
+    else if(lval.type == TOKEN_REAL && rval.type == TOKEN_REAL){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.real / rval.value.real;
+    }
+    else if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_REAL){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.integer / rval.value.real;
+    }
+    else if(lval.type == TOKEN_REAL && rval.type == TOKEN_INTEGER){
+        result.type = TOKEN_REAL;
+        result.value.real = lval.value.real / rval.value.integer;
+    }
+    else{
+        result.type = ERROR;
+        //runtimeError();
+        return result;
+    }
+    //printf("[*] result: %d\n", result.value.integer);
+    return result;
+}
+
+Token evalAssign(Token lval, Token rval){
 
 }
 
+Token subString(Token string, Token sp, Token ep){
+
+}
 void scanToken(){
     lookahead.type = yylex();    
     //printf("[*]lexem: %s\n", yytext);
@@ -162,7 +336,9 @@ void scanToken(){
 void syntaxError(){
     printf("Syntax error in line %d, Unexpected token %s\n", yylineno, yytext);
 }
-
+void runtimeError(){
+    printf("Runtime error in line %d \n", yylineno - 1);
+}
 void printAST(){
     if(ast == NULL){
         return;
@@ -178,27 +354,23 @@ void printAST(){
         Token token = cur->token;
         switch(token.type){
             case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV:
-                printf("%c\t", token.value.operator);
-                break;
+                printf("%c\t", token.value.operator); break;
             case TOKEN_ID:
-                printf("%s\t", token.value.id);
-                break;
+                printf("%s\t", token.value.id); break;
             case TOKEN_STRING:
-                printf("%s\t", token.value.string);
-                break;
+                printf("%s\t", token.value.string); break;
             case TOKEN_INTEGER:
-                printf("%d\t", token.value.integer);
-                break;
+                printf("%d\t", token.value.integer); break;
             case TOKEN_REAL:
-                printf("%lf\t", token.value.real);
-                break;
-            default:
-                break;
+                printf("%lf\t", token.value.real); break;
+            default: break;
         }
-		if (cur->left != NULL)	
+		if (cur->left != NULL)	{
             enqueue(head, cur->left);
-		if (cur->right != NULL)	
+        }
+		if (cur->right != NULL){
             enqueue(head, cur->right);
+        }
 	}
     printf("\n");
 }
