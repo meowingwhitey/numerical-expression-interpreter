@@ -9,6 +9,7 @@
 "-" { /* SUB */ return TOKEN_SUB; }
 "*" { /* MUL */ return TOKEN_MUL; }
 "/" { /* DIV */ return TOKEN_DIV; }
+"=" { /* ASSIGN */ return TOKEN_ASSIGN; }
 "(" { /* LP */ return TOKEN_LP; }
 ")" { /* RP */ return TOKEN_RP; }
 "," { /* COMMA */ return TOKEN_COMMA; }
@@ -19,10 +20,10 @@
 \"[A-Za-z]*\" { /* STRING */return TOKEN_STRING; }
 \$ast { printAST(ast); }
 \$symbol { printSymbol(); }
-\n { return BLANK; }
+\n { return ; }
 [ \n\t] ;
 <<EOF>> { return END_OF_FILE; }
-. { printf("Lexical Error in line %d.\n", yylineno); return ERROR; }
+. { printf("Lexical Error in line %d. %x\n", yylineno, yytext[0]); return ERROR; }
 
 %%
 int yywrap(void){

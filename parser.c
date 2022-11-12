@@ -8,8 +8,11 @@ extern int yylex();
 extern int yylineno;
 extern char* yytext;
 
+char TOKEN_TYPE_STRING[3][7] = {
+    "INT", "REAL", "STRING"
+};
 Token lookahead;
-Symbol* symbol_table[MAX_TABLE_SIZE];
+Symbol symbol_table[MAX_TABLE_SIZE];
 int symbol_table_size = 0;
 Node* ast;
 int error_detect;
@@ -29,6 +32,7 @@ int main(void){
         ast = all();
         if(error_detect == TRUE){
             error_detect = FALSE;
+            free(error_token); error_token = NULL;
             syntaxError();
             continue;
         }
@@ -39,11 +43,24 @@ int main(void){
     return 0;
 }
 Node* all(){
-    //printf("%s: %s\n", "A", yytext);
+    printf("%s: %s\n", "A", yytext);
     /* id A' */
     if(lookahead.type == TOKEN_ID){
+        printf("[*]TOKEN_ID OK\n");
         Node* id = createNode(lookahead);
+        scanToken();
         Node* ra = restAll();
+        printf("ra: 0x%X\n", ra);
+        if(ra == NULL){
+            return id;
+        }
+        /*
+        Node* temp = ra;
+        while(temp->left != NULL){
+            temp = temp->left;
+        }
+        temp->left = id;
+        */
         ra->left = id;
         return ra;
     }
@@ -52,6 +69,8 @@ Node* all(){
         Node* rf = restFactor();
         if(rf == NULL){
             error_detect = TRUE;
+            error_token = (char*)malloc(sizeof(strlen(yytext)));
+            strcpy(error_token, yytext);
             return NULL;
         }
         Node* rt = restTerm();
@@ -90,20 +109,26 @@ Node* all(){
     }
 }
 Node* restAll(){
+    printf("%s: %s\n", "A\'", yytext);
     /* = A */
     if(lookahead.type == TOKEN_ASSIGN){
+        printf("[*]TOKEN_ASSIGN OK\n");
+        Node* op = createNode(lookahead);
+        scanToken();
         Node* a = all();
         if(a == NULL){
             error_detect = TRUE;
+            error_token = (char*)malloc(sizeof(strlen(yytext)));
+            strcpy(error_token, yytext);
             return NULL;
         }
-        return a;
+        op->right = a;
+        return op;
     }
     /* T' E’ */
     else{
         Node* tr = restTerm();
         if(tr == NULL){
-            error_detect = TRUE;
             return NULL;
         }
         Node* re = restExpr();
@@ -120,10 +145,12 @@ Node* restAll(){
 }
 Node* expr(){
     /* T E’ */
-    //printf("%s: %s\n", "E", yytext);
+    printf("%s: %s\n", "E", yytext);
     Node* t = term();
     if(t == NULL){
         error_detect = TRUE;
+        error_token = (char*)malloc(sizeof(strlen(yytext)));
+        strcpy(error_token, yytext);
         return NULL;
     }
     Node* re = restExpr();
@@ -139,14 +166,16 @@ Node* expr(){
 }
 
 Node* restExpr(){
+    printf("%s: %s\n", "E\'", yytext);
     /* + T E‘ | - F T' */
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
-        //printf("%s: %s\n", "E\'", yytext);
         Node* op = createNode(lookahead);
         scanToken();
         Node* t = term();
         if(t == NULL){
             error_detect = TRUE;
+            error_token = (char*)malloc(sizeof(strlen(yytext)));
+            strcpy(error_token, yytext);
             //detectError();
             return NULL;
         }
@@ -168,10 +197,12 @@ Node* restExpr(){
 
 Node* term(){
     /* F T' */
-    //printf("%s: %s\n", "T", yytext);
+    printf("%s: %s\n", "T", yytext);
     Node* f = factor();
     if(f == NULL){
         error_detect = TRUE;
+        error_token = (char*)malloc(sizeof(strlen(yytext)));
+        strcpy(error_token, yytext);
         return NULL;
     }
     //printf("[*] FACTOR: 0x%X, %d\n", f, f->token.type);
@@ -189,18 +220,20 @@ Node* term(){
 }
 
 Node* restTerm(){
+    printf("%s: %s\n", "T\'", yytext);
     /* * F T' | / F T' */
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
-        //printf("%s: %s\n", "T\'", yytext);
         Node* op = createNode(lookahead);
         scanToken();
         Node* f = factor();
         if(f == NULL){
             error_detect = TRUE;
+            error_token = (char*)malloc(sizeof(strlen(yytext)));
+            strcpy(error_token, yytext);
             return NULL;
         }
-        Node* rt = restTerm();
         op->right = f;
+        Node* rt = restTerm();
         if(rt == NULL){
             return op;
         }
@@ -216,9 +249,9 @@ Node* restTerm(){
 }
 
 Node* factor(){
+    printf("%s: %s\n", "F", yytext);
     /* id */
     if(lookahead.type == TOKEN_ID){
-        //printf("%s: %s\n", "F", yytext);
         Node* num = createNode(lookahead);
         scanToken();
         return num;
@@ -227,13 +260,17 @@ Node* factor(){
     else{
         Node* rf = restFactor();
         if(rf == NULL){
-            error_detect = TRUE; return NULL;
+            error_detect = TRUE; 
+            error_token = (char*)malloc(sizeof(strlen(yytext)));
+            strcpy(error_token, yytext);
+            return NULL;
         }
         return rf;
     }
 }
 
 Node* restFactor(){
+    printf("%s: %s\n", "F\'", yytext);
     /* ( A ) */
     if(lookahead.type == TOKEN_LP){
         scanToken();
@@ -276,6 +313,7 @@ Node* restFactor(){
 }
 
 Node* string(){
+    printf("%s: %s\n", "S", yytext);
     if(lookahead.type == TOKEN_STRING){
         //printf("%s: %s\n", "S", yytext);
         Node* str = createNode(lookahead);
@@ -300,6 +338,7 @@ void printEval(){
         case TOKEN_INTEGER: printf("%d\n", result.value.integer); break;
         case TOKEN_REAL: printf("%lf\n", result.value.real); break;
         case TOKEN_STRING: printf("%s\n", result.value.string); break;
+        case TOKEN_ID: printf("%s\n", result.value.id); break;
         default: runtimeError(); break;
     }
 }
@@ -312,17 +351,17 @@ Token evalRecursive(Node* cur){
     }
     Token val = cur->token;
     if(val.type == TOKEN_INTEGER || val.type == TOKEN_REAL || val.type == TOKEN_STRING){
-        //printf("========evalRecursive========\n");
-        //printf("[*] value: %d\n", val.value.integer);
+        printf("========evalRecursive========\n");
+        printf("[*] value: %d\n", val.value.integer);
         return val;
     }
     Token lval = evalRecursive(cur->left);
     Token rval = evalRecursive(cur->right);
-    /*
+    
     printf("=========evalRecursive=======\n");
     printf("[*] token: %d\n", val.type);
     printf("[*] lval: %d, rval: %d\n", lval.type, rval.type);
-    */
+    
     /* 연산 케이스 별로 나눠서 진행 */
     switch(val.type){
         case TOKEN_ADD: result = evalAdd(lval, rval); break;
@@ -330,6 +369,7 @@ Token evalRecursive(Node* cur){
         case TOKEN_MUL: result = evalMul(lval, rval); break;
         case TOKEN_DIV: result = evalDiv(lval, rval); break;
         case TOKEN_ASSIGN: result = evalAssign(lval, rval); break;
+        case TOKEN_ID: result = val; break;
         case TOKEN_SUB_STRING: result = subString(val, lval, rval); break;
         default: break;
     }
@@ -466,7 +506,38 @@ Token evalDiv(Token lval, Token rval){
 }
 
 Token evalAssign(Token lval, Token rval){
-
+    Token result;
+    printf("======evalAssign======\n");
+    printf("[*] lval: %s, rval: %d\n", lval.value.id, rval.value.integer);
+    printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
+    //좌변이 id가 아니면 Assign 자체가 불가능
+    if(lval.type != TOKEN_ID){
+        result.type = ERROR;
+        return result;   
+    }
+    // 우변이 할당 가능한 값이어야됨
+    if(rval.type == TOKEN_INTEGER || rval.type == TOKEN_REAL || rval.type == TOKEN_STRING){
+        int idx = -1;
+        idx = checkIdx(lval.value.id);
+        switch(rval.type){
+            case TOKEN_INTEGER: result.varType = INT; break;
+            case TOKEN_REAL: result.varType = INT; break;
+            case TOKEN_STRING: result.varType = INT; break;
+            default:
+                break;
+        }
+        // 이미 이전에 선언한 변수
+        if(idx != -1){
+            symbol_table[idx].token = rval;
+            return symbol_table[idx].token;
+        }   
+        // 새로 선언되는 변수
+        else{
+            idx = installID(lval.value.id, rval);
+            return symbol_table[idx].token;
+        }
+    }
+    else { result.type = ERROR; return result; }
 }
 
 Token subString(Token string, Token sp, Token ep){
@@ -500,7 +571,7 @@ void scanToken(){
 }
 
 void syntaxError(){
-    printf("Syntax error in line %d, Unexpected token %s\n", yylineno, error_token);
+    printf("Syntax error in line %d, Unexpected token 0x%X\n", yylineno, error_token[0]);
 }
 void runtimeError(){
     printf("Runtime error in line %d \n", yylineno - 1);
@@ -520,7 +591,7 @@ void printAST(Node* ast){
             cur = dequeue(head); queueSize --;
             Token token = cur->token;
             switch(token.type){
-                case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV:
+                case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV: case TOKEN_ASSIGN:
                     if(cur->left != NULL){ child_num ++; }
                     if(cur->right != NULL){ child_num ++; }
                     printf("%c%d  ", token.value.operator, child_num); child_num = 0; break;
@@ -547,15 +618,40 @@ void printAST(Node* ast){
 }
 
 void printSymbol(){
-    printf("[*] printSymbol\n");
+    printf("%-10s %-10s %-10s\n", "name", "value", "type");
+    for(int i = 0; i < symbol_table_size; i++){
+        Symbol symbol = symbol_table[i];
+        Token token = symbol.token;
+        printf("%-10s ", symbol.name);
+        switch(token.varType){
+            case INT:
+                printf("%-10d ", token.value.integer); break;
+            case REAL:
+                printf("%-10lf ", token.value.real); break;
+            case STRING:
+                printf("%-10s ", token.value.string); break;
+            default: printf("[*] Variable Assign Error!\n"); break;
+        }
+        printf("%-10s \n", TOKEN_TYPE_STRING[token.varType]);
+    }
 }
 
 int installID(char* name, Token token){
     int size = symbol_table_size;
-    symbol_table[size] = (Symbol*)malloc(sizeof(Symbol));
-    symbol_table[size]->name = name;
-    symbol_table[size]->token = token;
-    return ++symbol_table_size;
+    printf("[*] Install Id: %s\n", name);
+    symbol_table[size].name = name;
+    symbol_table[size].token = token;
+    return symbol_table_size++;
+}
+int checkIdx(char* name){
+    printf("checking...\n");
+    for(int i = 0; i < symbol_table_size; i++){
+        if(strcmp(symbol_table[i].name, name) == 0){
+            return i;
+        }
+    }
+    printf("check done!\n");
+    return -1;
 }
 
 void finalize(){
