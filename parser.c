@@ -236,14 +236,15 @@ Node* factor(){
 Node* restFactor(){
     /* ( A ) */
     if(lookahead.type == TOKEN_LP){
+        scanToken();
         Node* a = all();
         if(a == NULL){
             error_detect = TRUE; return NULL;
         }
-        if(lookahead.type == TOKEN_RP){
+        if(lookahead.type != TOKEN_RP){
             error_detect = TRUE; return NULL;
         }
-        else return a;
+        else { scanToken(); return a; }
     }
     /* inum | fnum */
     else if(lookahead.type == TOKEN_INTEGER || lookahead.type == TOKEN_REAL){
