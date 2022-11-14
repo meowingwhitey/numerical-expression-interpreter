@@ -79,6 +79,7 @@ Node* string();
 Node* createNode();
 
 void printEval();
+void printToken(Token token);
 Token evalRecursive(Node* cur);
 Token evalAdd(Token lval, Token rval);
 Token evalSub(Token lval, Token rval);
@@ -99,7 +100,6 @@ void printSymbol();
 /* Symbol 처리 관련 */
 int installID(char* name, Token token);
 int checkIdx(char* name);
-
 
 /* malloc free 모음 */
 void finalize();

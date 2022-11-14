@@ -370,18 +370,32 @@ Node* createNode(Token token){
     temp->left = NULL; temp->right = NULL;
     return temp;
 }
+void printToken(Token token){
+    int idx = -1;
+    switch(token.type){
+        case TOKEN_INTEGER: printf("%d\n", token.value.integer); break;
+        case TOKEN_REAL: printf("%lf\n", token.value.real); break;
+        case TOKEN_STRING: printf("\"%s\"\n", token.value.string); break;
+        case TOKEN_ID: 
+            // id가 table에 있음
+            idx = checkIdx(token.value.string);
+            if(idx != -1){
+                printToken(symbol_table[idx].token);
+            }
+            // id가 table에 없음
+            else{ printf("Runtime Error: undefined variable \"%s\"\n", token.value.string); }
+        break;
+        default: runtimeError(); break;
+    }
+    return;
+}
 
 /* 연산 후 결과를 문자열 형식으로 반환 */
 void printEval(){
     Token result = evalRecursive(ast);
     //printf("printEval: %d\n", result.type);
-    switch(result.type){
-        case TOKEN_INTEGER: printf("%d\n", result.value.integer); break;
-        case TOKEN_REAL: printf("%lf\n", result.value.real); break;
-        case TOKEN_STRING: printf("%s\n", result.value.string); break;
-        case TOKEN_ID: printf("%s\n", result.value.id); break;
-        default: runtimeError(); break;
-    }
+    printToken(result);
+    return;
 }
 /* 연산을 위한 Recursive 함수 */
 Token evalRecursive(Node* cur){
@@ -504,6 +518,17 @@ Token evalMul(Token lval, Token rval){
     else if(lval.type == TOKEN_REAL && rval.type == TOKEN_INTEGER){
         result.type = TOKEN_REAL;
         result.value.real = lval.value.real * rval.value.integer;
+    }
+    else if(lval.type == TOKEN_STRING && rval.type == TOKEN_INTEGER){
+        int src_length = strlen(lval.value.string);
+        int repeat = rval.value.integer;
+        result.type = TOKEN_STRING;
+        result.value.string = (char*)malloc(sizeof(lval.value.string) * repeat + 1);
+        for(int i = 0; i < repeat; i ++){
+            strncpy(result.value.string + i * src_length, lval.value.string, src_length);
+        }
+        result.value.string[src_length * repeat + 1] = NULL;
+        return result
     }
     else{
         result.type = ERROR;
@@ -689,7 +714,7 @@ void printSymbol(){
                 printf("%-10lf ", token.value.real); break;
             case STRING:
                 printf("%-10s ", token.value.string); break;
-            default: printf("[*] Variable Assign Error!\n"); break;
+            default: printf("runtime error: wrong variable assigned\n"); break;
         }
         printf("%-10s \n", TOKEN_TYPE_STRING[token.varType]);
     }
@@ -698,12 +723,21 @@ void printSymbol(){
 int installID(char* name, Token token){
     int size = symbol_table_size;
     printf("[*] Install Id: %s\n", name);
+    // variable 길이 제한
+    int id_length = strlen(name);
+    if(id_length > 10){
+        name[10] = NULL;
+    }
     symbol_table[size].name = name;
     symbol_table[size].token = token;
     return symbol_table_size++;
 }
 int checkIdx(char* name){
     printf("checking...\n");
+    int id_length = strlen(name);
+    if(id_length > 10){
+        name[10] = NULL;
+    }
     for(int i = 0; i < symbol_table_size; i++){
         if(strcmp(symbol_table[i].name, name) == 0){
             return i;
