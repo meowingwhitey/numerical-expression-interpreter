@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<math.h>
 #include "parser.h"
 #include "queue.h"
 
@@ -32,6 +33,7 @@ int main(void){
             syntaxError();
             continue;
         }
+        printAST(ast);
         printEval();
     } 
     finalize();
@@ -120,11 +122,14 @@ Node* restAll(){
     /* T' E’ */
     else{
         Node* tr = restTerm();
-        if(tr == NULL){
+        Node* re = restExpr();
+        if(tr == NULL && re == NULL){
             return NULL;
         }
-        Node* re = restExpr();
-        if(re == NULL){
+        if(tr == NULL && re != NULL){
+            return re;
+        }
+        if(tr != NULL && re == NULL){
             return tr;
         }
         Node* temp = re;
@@ -162,20 +167,21 @@ Node* expr(){
 Node* restExpr(){
     if(lookahead.type == BLANK){ return NULL; }
     printf("%s: %s\n", "E\'", yytext);
-    /* + T E‘ | - F T' */
+    /* + T E' | -  T E' */
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
         Node* op = createNode(lookahead);
         scanToken();
         Node* t = term();
         if(t == NULL){
             error_detect = TRUE;
-            error_token = (char*)malloc(sizeof(strlen(yytext)));
+            error_token = (char*)malloc(sizeof(strlen(yytext)) + 1);
             strcpy(error_token, yytext);
             //detectError();
             return NULL;
         }
-        Node* re = restExpr();
+        printf("5252\n");
         op->right = t;
+        Node* re = restExpr();
         if(re == NULL){
             return op;
         }
@@ -202,7 +208,7 @@ Node* term(){
         return NULL;
     }
     //printf("[*] FACTOR: 0x%X, %d\n", f, f->token.type);
-    Node* rt = restTerm(f);
+    Node* rt = restTerm();
     if(rt == NULL){
         return f;
     }
@@ -225,7 +231,7 @@ Node* restTerm(){
         Node* f = factor();
         if(f == NULL){
             error_detect = TRUE;
-            error_token = (char*)malloc(sizeof(strlen(yytext)));
+            error_token = (char*)malloc(sizeof(strlen(yytext)) + 1);
             strcpy(error_token, yytext);
             return NULL;
         }
@@ -462,6 +468,91 @@ Token evalAdd(Token lval, Token rval){
         result.type = TOKEN_REAL;
         result.value.real = lval.value.real + rval.value.integer;
     }
+    else if(lval.type == TOKEN_STRING && rval.type == TOKEN_STRING){
+        result.type = TOKEN_STRING;
+        char* concat = (char*)malloc(strlen(lval.value.string) + strlen(rval.value.string) + 1);
+        strncpy(concat, lval.value.string, strlen(lval.value.string));
+        strncpy(concat + strlen(lval.value.string), rval.value.string, strlen(rval.value.string));
+        concat[strlen(concat) + 1] = NULL;
+        result.value.string = concat;
+    }
+    else if(lval.type == TOKEN_STRING){
+        result.type = TOKEN_STRING;
+        char concat_buf[MAX_STRING_SIZE];
+        if(rval.type == TOKEN_INTEGER){
+            sprintf(concat_buf, "%s%d%c", lval.value.string, rval.value.integer, NULL);
+        }
+        else if(rval.type == TOKEN_REAL){
+            sprintf(concat_buf, "%s%lf%c", lval.value.string, rval.value.real, NULL);
+        }
+        else if(rval.type == TOKEN_ID){
+            int idx = checkIdx(rval.value.id);
+            if(idx == ERROR){
+                result.type = ERROR;
+                printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+                return result;
+            }
+            return evalAdd(lval, symbol_table[idx].token);
+        }
+        char* concat = (char*)malloc(strlen(concat_buf) + 1);
+        strcpy(concat, concat_buf);
+        result.value.string = concat;
+    }
+    else if(rval.type == TOKEN_STRING){
+        result.type = TOKEN_STRING;
+        char concat_buf[MAX_STRING_SIZE];
+        if(lval.type == TOKEN_INTEGER){
+            sprintf(concat_buf, "%d%s%c", lval.value.integer, rval.value.string, NULL);
+        }
+        else if(lval.type == TOKEN_REAL){
+            sprintf(concat_buf, "%lf%s%c", lval.value.real, rval.value.string, NULL);
+        }
+        else if(lval.type == TOKEN_ID){
+            int idx = checkIdx(lval.value.id);
+            if(idx == ERROR){
+                result.type = ERROR;
+                printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+                return result;
+            }
+            return evalAdd(symbol_table[idx].token, rval);
+        }
+        char* concat = (char*)malloc(strlen(concat_buf) + 1);
+        strcpy(concat, concat_buf);
+        result.value.string = concat;
+    }
+    else if(lval.type == TOKEN_ID && rval.type == TOKEN_ID){
+        int lval_idx = checkIdx(lval.value.id);
+        if(lval_idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+            return result;
+        }
+        int rval_idx = checkIdx(rval.value.id);
+         if(rval_idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+            return result;
+        }
+        return evalAdd(symbol_table[lval_idx].token, symbol_table[rval_idx].token);
+    }
+    else if(lval.type == TOKEN_ID){
+        int idx = checkIdx(lval.value.id);
+        if(idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+            return result;
+        }
+        return evalAdd(symbol_table[idx].token, rval);
+    }
+    else if(rval.type == TOKEN_ID){
+        int idx = checkIdx(rval.value.id);
+        if(idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+            return result;
+        }
+        return evalAdd(lval, symbol_table[idx].token);
+    }
     else{
         result.type = ERROR;
         //runtimeError();
@@ -493,6 +584,24 @@ Token evalSub(Token lval, Token rval){
     else if(lval.type == TOKEN_REAL && rval.type == TOKEN_INTEGER){
         result.type = TOKEN_REAL;
         result.value.real = lval.value.real - rval.value.integer;
+    }
+    else if(lval.type == TOKEN_ID){
+        int idx = checkIdx(lval.value.id);
+        if(idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+            return result;
+        }
+        return evalSub(symbol_table[idx].token, rval);
+    }
+    else if(rval.type == TOKEN_ID){
+        int idx = checkIdx(rval.value.id);
+        if(idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+            return result;
+        }
+        return evalSub(lval, symbol_table[idx].token);
     }
     else{
         result.type = ERROR;
@@ -541,7 +650,7 @@ Token evalMul(Token lval, Token rval){
         int idx = checkIdx(lval.value.id);
         if(idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", lval.value.string);
+            printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
             return result;
         }
         return evalMul(symbol_table[idx].token, rval);
@@ -550,7 +659,7 @@ Token evalMul(Token lval, Token rval){
         int idx = checkIdx(rval.value.id);
         if(idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", rval.value.string);
+            printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
             return result;
         }
         return evalMul(lval, symbol_table[idx].token);
@@ -650,9 +759,8 @@ Token subString(Token src, Token lval, Token rval){
     else{
         result.type = ERROR; return result;
     }
-    int sp = lval.value.integer; int ep = rval.value.integer;
-    int size = ep - sp;
-    if(sp > ep || strlen(src.value.string) < size){
+    int sp = lval.value.integer; int size = rval.value.integer;
+    if(sp > strlen(src.value.string) || strlen(src.value.string) < size){
         result.type = ERROR; return result;
     }
     printf("======subString======\n");
@@ -738,11 +846,10 @@ void printAST(Node* ast){
 }
 
 void printSymbol(){
-    printf("%-5s %-5s %-5s\n", "name", "value", "type");
+    printf("%-5s %-5s %-5s\n", "NAME", "VALUE", "TYPE");
     for(int i = 0; i < symbol_table_size; i++){
         Symbol symbol = symbol_table[i];
         Token token = symbol.token;
-        printf("token.varType : %d\n", token.type);
         printf("%s ", symbol.name);
         switch(token.type){
             case TOKEN_INTEGER: printf("%d ", token.value.integer); break;

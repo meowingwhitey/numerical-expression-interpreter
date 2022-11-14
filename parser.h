@@ -20,6 +20,7 @@
 #define MAX_TABLE_SIZE 100
 #define MAX_TOKEN_SIZE 1000
 #define MAX_LINE_LENGTH 1000
+#define MAX_STRING_SIZE 100
 
 #define TRUE 1
 #define FALSE 0
@@ -101,6 +102,7 @@ void printSymbol();
 int installID(char* name, Token token);
 int checkIdx(char* name);
 const char* TOKEN_TYPE_STRING(TokenType type);
+
 /* malloc free 모음 */
 void finalize();
 void setLookahead(TokenType type, Value value);
