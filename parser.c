@@ -37,11 +37,11 @@ int main(void){
             continue;
         }
         printEval();
-        
     } 
     finalize();
     return 0;
 }
+
 Node* all(){
     printf("%s: %s\n", "A", yytext);
     /* id A' */
@@ -108,6 +108,7 @@ Node* all(){
         return re;
     }
 }
+
 Node* restAll(){
     printf("%s: %s\n", "A\'", yytext);
     /* = A */
@@ -143,6 +144,7 @@ Node* restAll(){
         return re;       
     }
 }
+
 Node* expr(){
     /* T E’ */
     printf("%s: %s\n", "E", yytext);
@@ -308,6 +310,45 @@ Node* restFactor(){
     }
     /* sub(S, E, E) */
     else if(lookahead.type == TOKEN_SUB_STRING){
+        printf("[*]sub(S, E, E): %s\n", yytext);
+        Node* sub_str = createNode(lookahead);
+        scanToken();
+        //lookahead가 "("가 아닌 경우 
+        if(strcmp(yytext, "(") != 0 ){
+            error_detect = TRUE; return NULL;
+        }
+        scanToken();
+        Node* str = string();
+        if(str == NULL){
+            error_detect = TRUE; return NULL;
+        }
+        sub_str->token.value.string = str->token.value.string;
+        printf("[*] sub_str->token.value.string: %s\n", sub_str->token.value.string);
+        //lookahead가 ","가 아닌 경우 
+        if(strcmp(yytext, ",") != 0 ){
+            error_detect = TRUE; return NULL;
+        }
+        scanToken();
+        Node* expr1 = expr();
+        if(expr1 == NULL){
+            error_detect = TRUE; return NULL;
+        }
+        //lookahead가 ","가 아닌 경우 
+        if(strcmp(yytext, ",") != 0 ){
+            error_detect = TRUE; return NULL;
+        }    
+        scanToken(); 
+        Node* expr2 = expr();
+        if(expr2 == NULL){
+            error_detect = TRUE; return NULL;
+        }
+        //lookahead가 ")"가 아닌 경우 
+        if(strcmp(yytext, ")") != 0 ){
+            error_detect = TRUE; return NULL;
+        }
+        scanToken();
+        sub_str->left = expr1; sub_str->right = expr2;
+        return sub_str;
     }
     else{ error_detect = TRUE; return NULL; }
 }
@@ -540,8 +581,26 @@ Token evalAssign(Token lval, Token rval){
     else { result.type = ERROR; return result; }
 }
 
-Token subString(Token string, Token sp, Token ep){
-
+Token subString(Token string, Token lval, Token rval){
+    Token result;
+    if(lval.type != TOKEN_INTEGER && rval.type != TOKEN_INTEGER){
+        result.type = ERROR; return result;
+    }
+    int sp = lval.value.integer; int ep = rval.value.integer;
+    int size = ep - sp;
+    if(sp > ep || strlen(string.value.string) < size){
+        result.type = ERROR; return result;
+    }
+    printf("======subString======\n");
+    printf("[*] string: %s\n", string.value.string);
+    printf("[*] lval: %d, rval: %d\n", lval.value.integer, rval.value.integer);
+    printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
+    char* sub_string = (char*)malloc(size + 1);
+    memcpy(sub_string, string.value.string + sp, size);
+    result.type = TOKEN_STRING;
+    result.value.string = sub_string;
+    result.varType = STRING;
+    return result;
 }
 
 void scanToken(){
@@ -598,7 +657,7 @@ void printAST(Node* ast){
                 case TOKEN_ID:
                     printf("%s  ", token.value.id); break;
                 case TOKEN_STRING:
-                    printf("%s  ", token.value.string); break;
+                    printf("\"%s\"  ", token.value.string); break;
                 case TOKEN_INTEGER:
                     printf("%d  ", token.value.integer); break;
                 case TOKEN_REAL:

@@ -17,10 +17,16 @@
 [0-9]*[.][0-9]+   { /* REAL */ return TOKEN_REAL; }
 0|[1-9][0-9]*   { /* INTEGER */ return TOKEN_INTEGER; }
 [_A-Za-z]+[_A-Za-z0-9]* { /* IDENTIFIER */ return TOKEN_ID; }
-\"[A-Za-z]*\" { /* STRING */return TOKEN_STRING; }
+\"[A-Za-z]*\" { 
+  /* STRING */ 
+  int size = strlen(yytext);
+  strncpy(yytext, yytext + 1, size - 2);
+  yytext[size - 2] = NULL;
+  return TOKEN_STRING; 
+  }
 \$ast { printAST(ast); }
 \$symbol { printSymbol(); }
-\n { return ; }
+\n { return BLANK; }
 [ \n\t] ;
 <<EOF>> { return END_OF_FILE; }
 . { printf("Lexical Error in line %d. %x\n", yylineno, yytext[0]); return ERROR; }

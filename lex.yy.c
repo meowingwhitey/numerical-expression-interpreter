@@ -850,45 +850,51 @@ YY_RULE_SETUP
 case 13:
 YY_RULE_SETUP
 #line 20 "exp.l"
-{ /* STRING */return TOKEN_STRING; }
+{ 
+  /* STRING */ 
+  int size = strlen(yytext);
+  strncpy(yytext, yytext + 1, size - 2);
+  yytext[size - 2] = NULL;
+  return TOKEN_STRING; 
+  }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 21 "exp.l"
+#line 27 "exp.l"
 { printAST(ast); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 22 "exp.l"
+#line 28 "exp.l"
 { printSymbol(); }
 	YY_BREAK
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 23 "exp.l"
-{ return ; }
+#line 29 "exp.l"
+{ return BLANK; }
 	YY_BREAK
 case 17:
 /* rule 17 can match eol */
 YY_RULE_SETUP
-#line 24 "exp.l"
+#line 30 "exp.l"
 ;
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 25 "exp.l"
+#line 31 "exp.l"
 { return END_OF_FILE; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 26 "exp.l"
+#line 32 "exp.l"
 { printf("Lexical Error in line %d. %x\n", yylineno, yytext[0]); return ERROR; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 28 "exp.l"
+#line 34 "exp.l"
 ECHO;
 	YY_BREAK
-#line 892 "lex.yy.c"
+#line 898 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1903,7 +1909,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 28 "exp.l"
+#line 34 "exp.l"
 
 int yywrap(void){
   return 1;

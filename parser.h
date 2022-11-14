@@ -48,7 +48,8 @@ typedef union Value{
 
 typedef struct Token{
     TokenType type;
-    //변수 타입 다른 종류의 토큰에선 사용하지 않음
+    //evaluate에 사용하는 변수 타입
+    //다른 종류의 토큰에선 사용하지 않음
     VariableType varType;
     Value value;
 }Token;
