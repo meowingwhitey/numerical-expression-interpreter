@@ -8,9 +8,6 @@ extern int yylex();
 extern int yylineno;
 extern char* yytext;
 
-char TOKEN_TYPE_STRING[3][7] = {
-    "INT", "REAL", "STRING"
-};
 Token lookahead;
 Symbol symbol_table[MAX_TABLE_SIZE];
 int symbol_table_size = 0;
@@ -22,7 +19,6 @@ int main(void){
     while(TRUE){
         printf(">");
         scanToken();
-        //printf("yytext: %s\n", yytext);
         if(yytext[0] == '\n'){
             continue;
         }
@@ -43,6 +39,7 @@ int main(void){
 }
 
 Node* all(){
+    if(lookahead.type == BLANK){ return NULL; }
     printf("%s: %s\n", "A", yytext);
     /* id A' */
     if(lookahead.type == TOKEN_ID){
@@ -54,13 +51,6 @@ Node* all(){
         if(ra == NULL){
             return id;
         }
-        /*
-        Node* temp = ra;
-        while(temp->left != NULL){
-            temp = temp->left;
-        }
-        temp->left = id;
-        */
         ra->left = id;
         return ra;
     }
@@ -110,6 +100,7 @@ Node* all(){
 }
 
 Node* restAll(){
+    if(lookahead.type == BLANK){ return NULL; }
     printf("%s: %s\n", "A\'", yytext);
     /* = A */
     if(lookahead.type == TOKEN_ASSIGN){
@@ -146,8 +137,9 @@ Node* restAll(){
 }
 
 Node* expr(){
-    /* T E’ */
+    if(lookahead.type == BLANK){ return NULL; }
     printf("%s: %s\n", "E", yytext);
+    /* T E’ */
     Node* t = term();
     if(t == NULL){
         error_detect = TRUE;
@@ -168,6 +160,7 @@ Node* expr(){
 }
 
 Node* restExpr(){
+    if(lookahead.type == BLANK){ return NULL; }
     printf("%s: %s\n", "E\'", yytext);
     /* + T E‘ | - F T' */
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
@@ -198,6 +191,7 @@ Node* restExpr(){
 }
 
 Node* term(){
+    if(lookahead.type == BLANK){ return NULL; }
     /* F T' */
     printf("%s: %s\n", "T", yytext);
     Node* f = factor();
@@ -222,6 +216,7 @@ Node* term(){
 }
 
 Node* restTerm(){
+    if(lookahead.type == BLANK){ return NULL; }
     printf("%s: %s\n", "T\'", yytext);
     /* * F T' | / F T' */
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
@@ -251,6 +246,7 @@ Node* restTerm(){
 }
 
 Node* factor(){
+    if(lookahead.type == BLANK){ return NULL; }
     printf("%s: %s\n", "F", yytext);
     /* id */
     if(lookahead.type == TOKEN_ID){
@@ -272,6 +268,7 @@ Node* factor(){
 }
 
 Node* restFactor(){
+    if(lookahead.type == BLANK){ return NULL; }
     printf("%s: %s\n", "F\'", yytext);
     /* ( A ) */
     if(lookahead.type == TOKEN_LP){
@@ -308,7 +305,7 @@ Node* restFactor(){
         sub->right = f;
         return sub;
     }
-    /* sub(S, E, E) */
+    /* sub(S, E, E) | sub(id, E, E) */
     else if(lookahead.type == TOKEN_SUB_STRING){
         printf("[*]sub(S, E, E): %s\n", yytext);
         Node* sub_str = createNode(lookahead);
@@ -318,12 +315,21 @@ Node* restFactor(){
             error_detect = TRUE; return NULL;
         }
         scanToken();
-        Node* str = string();
-        if(str == NULL){
-            error_detect = TRUE; return NULL;
+        //src가 id일때
+        if(lookahead.type == TOKEN_ID){
+            sub_str->token.value.id = lookahead.value.id;
+            printf("[*] sub_str->token.value.id: %s\n", sub_str->token.value.id);
+            scanToken();
         }
-        sub_str->token.value.string = str->token.value.string;
-        printf("[*] sub_str->token.value.string: %s\n", sub_str->token.value.string);
+        else{
+            Node* str = string();
+            if(str == NULL){
+                error_detect = TRUE; return NULL;
+            }
+            sub_str->token.value.string = str->token.value.string;
+            printf("[*] sub_str->token.value.string: %s\n", sub_str->token.value.string);
+            scanToken();
+        }
         //lookahead가 ","가 아닌 경우 
         if(strcmp(yytext, ",") != 0 ){
             error_detect = TRUE; return NULL;
@@ -354,6 +360,7 @@ Node* restFactor(){
 }
 
 Node* string(){
+    if(lookahead.type == BLANK){ return NULL; }
     printf("%s: %s\n", "S", yytext);
     if(lookahead.type == TOKEN_STRING){
         //printf("%s: %s\n", "S", yytext);
@@ -528,7 +535,25 @@ Token evalMul(Token lval, Token rval){
             strncpy(result.value.string + i * src_length, lval.value.string, src_length);
         }
         result.value.string[src_length * repeat + 1] = NULL;
-        return result
+        return result;
+    }
+    else if(lval.type == TOKEN_ID && rval.type == TOKEN_INTEGER){
+        int idx = checkIdx(lval.value.id);
+        if(idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", lval.value.string);
+            return result;
+        }
+        char* src = symbol_table[idx].token.value.string;
+        int src_length = strlen(src);
+        int repeat = rval.value.integer;
+        result.type = TOKEN_STRING;
+        result.value.string = (char*)malloc(sizeof(src) * repeat + 1);
+        for(int i = 0; i < repeat; i ++){
+            strncpy(result.value.string + i * src_length, src, src_length);
+        }
+        result.value.string[src_length * repeat + 1] = NULL;
+        return result;        
     }
     else{
         result.type = ERROR;
@@ -583,17 +608,16 @@ Token evalAssign(Token lval, Token rval){
     }
     // 우변이 할당 가능한 값이어야됨
     if(rval.type == TOKEN_INTEGER || rval.type == TOKEN_REAL || rval.type == TOKEN_STRING){
-        int idx = -1;
+        int idx = ERROR;
         idx = checkIdx(lval.value.id);
         switch(rval.type){
             case TOKEN_INTEGER: result.varType = INT; break;
-            case TOKEN_REAL: result.varType = INT; break;
-            case TOKEN_STRING: result.varType = INT; break;
-            default:
-                break;
+            case TOKEN_REAL: result.varType = REAL; break;
+            case TOKEN_STRING: result.varType = STRING; break;
+            default: break;
         }
         // 이미 이전에 선언한 변수
-        if(idx != -1){
+        if(idx != ERROR){
             symbol_table[idx].token = rval;
             return symbol_table[idx].token;
         }   
@@ -606,24 +630,40 @@ Token evalAssign(Token lval, Token rval){
     else { result.type = ERROR; return result; }
 }
 
-Token subString(Token string, Token lval, Token rval){
+Token subString(Token src, Token lval, Token rval){
     Token result;
     if(lval.type != TOKEN_INTEGER && rval.type != TOKEN_INTEGER){
         result.type = ERROR; return result;
     }
+    if(src.type == TOKEN_STRING){
+        result.type = ERROR; return result;
+    }
+    //String 대신 Token이 들어가는 경우
+    if(src.type == TOKEN_ID && src.varType == STRING){
+        int idx = checkIdx(src.value.id);
+        if(idx == ERROR){
+            result.type = ERROR; return result;
+        }
+        src.value.string = symbol_table[idx].token.value.string;
+        src.type = TOKEN_STRING;
+    }
+    else{
+        result.type = ERROR; return result;
+    }
     int sp = lval.value.integer; int ep = rval.value.integer;
     int size = ep - sp;
-    if(sp > ep || strlen(string.value.string) < size){
+    if(sp > ep || strlen(src.value.string) < size){
         result.type = ERROR; return result;
     }
     printf("======subString======\n");
-    printf("[*] string: %s\n", string.value.string);
+    printf("[*] string: %s\n", src.value.string);
     printf("[*] lval: %d, rval: %d\n", lval.value.integer, rval.value.integer);
     printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
-    char* sub_string = (char*)malloc(size + 1);
-    memcpy(sub_string, string.value.string + sp, size);
+    char* sub_str = (char*)malloc(size + 1);
+    memcpy(sub_str, src.value.string + sp, size);
+    sub_str[size + 1] = NULL;
     result.type = TOKEN_STRING;
-    result.value.string = sub_string;
+    result.value.string = sub_str;
     result.varType = STRING;
     return result;
 }
@@ -655,7 +695,7 @@ void scanToken(){
 }
 
 void syntaxError(){
-    printf("Syntax error in line %d, Unexpected token 0x%X\n", yylineno, error_token[0]);
+    printf("Syntax error in line %d, Unexpected token 0x%X\n", yylineno, yytext);
 }
 void runtimeError(){
     printf("Runtime error in line %d \n", yylineno - 1);
@@ -679,14 +719,10 @@ void printAST(Node* ast){
                     if(cur->left != NULL){ child_num ++; }
                     if(cur->right != NULL){ child_num ++; }
                     printf("%c%d  ", token.value.operator, child_num); child_num = 0; break;
-                case TOKEN_ID:
-                    printf("%s  ", token.value.id); break;
-                case TOKEN_STRING:
-                    printf("\"%s\"  ", token.value.string); break;
-                case TOKEN_INTEGER:
-                    printf("%d  ", token.value.integer); break;
-                case TOKEN_REAL:
-                    printf("%lf  ", token.value.real); break;
+                case TOKEN_ID: printf("%s  ", token.value.id); break;
+                case TOKEN_STRING: printf("\"%s\"  ", token.value.string); break;
+                case TOKEN_INTEGER: printf("%d  ", token.value.integer); break;
+                case TOKEN_REAL: printf("%lf  ", token.value.real); break;
                 default: break;
             }
             if (cur->left != NULL)	{
@@ -702,21 +738,19 @@ void printAST(Node* ast){
 }
 
 void printSymbol(){
-    printf("%-10s %-10s %-10s\n", "name", "value", "type");
+    printf("%-5s %-5s %-5s\n", "name", "value", "type");
     for(int i = 0; i < symbol_table_size; i++){
         Symbol symbol = symbol_table[i];
         Token token = symbol.token;
-        printf("%-10s ", symbol.name);
-        switch(token.varType){
-            case INT:
-                printf("%-10d ", token.value.integer); break;
-            case REAL:
-                printf("%-10lf ", token.value.real); break;
-            case STRING:
-                printf("%-10s ", token.value.string); break;
+        printf("token.varType : %d\n", token.type);
+        printf("%s ", symbol.name);
+        switch(token.type){
+            case TOKEN_INTEGER: printf("%d ", token.value.integer); break;
+            case TOKEN_REAL: printf("%lf ", token.value.real); break;
+            case TOKEN_STRING: printf("\"%s\" ", token.value.string); break;
             default: printf("runtime error: wrong variable assigned\n"); break;
         }
-        printf("%-10s \n", TOKEN_TYPE_STRING[token.varType]);
+        printf("%s \n", TOKEN_TYPE_STRING(token.type));
     }
 }
 
@@ -732,6 +766,15 @@ int installID(char* name, Token token){
     symbol_table[size].token = token;
     return symbol_table_size++;
 }
+const char* TOKEN_TYPE_STRING(TokenType type){
+    switch(type){
+        case TOKEN_INTEGER: return "INT";
+        case TOKEN_REAL: return "REAL";
+        case TOKEN_STRING: return "STRING";
+        default: printf("Runtime Error: wrong variable assign.\n"); break;
+    }
+    return NULL;
+}
 int checkIdx(char* name){
     printf("checking...\n");
     int id_length = strlen(name);
@@ -744,7 +787,7 @@ int checkIdx(char* name){
         }
     }
     printf("check done!\n");
-    return -1;
+    return ERROR;
 }
 
 void finalize(){

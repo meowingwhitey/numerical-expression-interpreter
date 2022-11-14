@@ -13,7 +13,7 @@
     T -> F T' 
     T' -> * F T' | / F T' | ε 
     F -> id | F'
-    F' -> ( A ) | inum | fnum | S | - F | sub(S , E, E)
+    F' -> ( A ) | inum | fnum | S | - F |  sub(id, E, E) | sub(S, E, E) | 
     S -> str
 */
 #pragma once
@@ -35,7 +35,7 @@ typedef enum TokenType{
 }TokenType;
 
 typedef enum VariableType{
-    INT = 0, REAL = TOKEN_REAL, STRING = TOKEN_STRING
+    INT = TOKEN_INTEGER, REAL = TOKEN_REAL, STRING = TOKEN_STRING
 }VariableType;
 
 typedef union Value{
@@ -100,7 +100,7 @@ void printSymbol();
 /* Symbol 처리 관련 */
 int installID(char* name, Token token);
 int checkIdx(char* name);
-
+const char* TOKEN_TYPE_STRING(TokenType type);
 /* malloc free 모음 */
 void finalize();
 void setLookahead(TokenType type, Value value);

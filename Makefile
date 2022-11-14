@@ -1,6 +1,5 @@
 parser_201720857 : exp.l
 	flex exp.l
-	gcc -g -c -o queue.o queue.c
 	gcc -g -c -o parser.o parser.c
 	gcc -g -c -o lex.yy.o lex.yy.c
 	gcc -g -o $@.out parser.o lex.yy.o -lfl
