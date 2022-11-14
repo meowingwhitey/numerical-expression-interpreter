@@ -66,28 +66,10 @@ typedef struct Symbol {
     Token token;
 }Symbol;
 
-/* Grammers */
-Node* all();
-Node* restAll();
-Node* expr();
-Node* restExpr();
-Node* term();
-Node* restTerm();
-Node* factor();
-Node* restFactor();
-Node* string();
-
 Node* createNode();
 
 void printEval();
 void printToken(Token token);
-Token evalRecursive(Node* cur);
-Token evalAdd(Token lval, Token rval);
-Token evalSub(Token lval, Token rval);
-Token evalMul(Token lval, Token rval);
-Token evalDiv(Token lval, Token rval);
-Token evalAssign(Token lval, Token rval);
-Token subString(Token string, Token sp, Token ep);
 
 void scanToken();
 
