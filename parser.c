@@ -537,23 +537,23 @@ Token evalMul(Token lval, Token rval){
         result.value.string[src_length * repeat + 1] = NULL;
         return result;
     }
-    else if(lval.type == TOKEN_ID && rval.type == TOKEN_INTEGER){
+    else if(lval.type == TOKEN_ID){
         int idx = checkIdx(lval.value.id);
         if(idx == ERROR){
             result.type = ERROR;
             printf("Runtime Error: variable %s is not defined.\n", lval.value.string);
             return result;
         }
-        char* src = symbol_table[idx].token.value.string;
-        int src_length = strlen(src);
-        int repeat = rval.value.integer;
-        result.type = TOKEN_STRING;
-        result.value.string = (char*)malloc(sizeof(src) * repeat + 1);
-        for(int i = 0; i < repeat; i ++){
-            strncpy(result.value.string + i * src_length, src, src_length);
+        return evalMul(symbol_table[idx].token, rval);
+    }
+    else if(rval.type == TOKEN_ID){
+        int idx = checkIdx(rval.value.id);
+        if(idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", rval.value.string);
+            return result;
         }
-        result.value.string[src_length * repeat + 1] = NULL;
-        return result;        
+        return evalMul(lval, symbol_table[idx].token);
     }
     else{
         result.type = ERROR;
