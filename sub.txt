@@ -1,5 +1,1 @@
-sub("string", 0, 3)
-alpha = "abcdefghijk"
-beta = sub(alpha, 0, 2)
-beta
-
+(sub(((("abc123"))),(3),(3))

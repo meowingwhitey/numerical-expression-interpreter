@@ -34,8 +34,8 @@ Token evalRecursive(Node* cur){
         return val;
     }
     Token lval = evalRecursive(cur->left);
+    Token mval = evalRecursive(cur->middle);
     Token rval = evalRecursive(cur->right);
-    
     printf("=========evalRecursive=======\n");
     printf("[*] token: %d\n", val.type);
     printf("[*] lval: %d, rval: %d\n", lval.type, rval.type);
@@ -48,7 +48,8 @@ Token evalRecursive(Node* cur){
         case TOKEN_DIV: result = evalDiv(lval, rval); break;
         case TOKEN_ASSIGN: result = evalAssign(lval, rval); break;
         case TOKEN_ID: result = val; break;
-        case TOKEN_SUB_STRING: result = subString(val, lval, rval); break;
+        case TOKEN_SUB_STRING: 
+            result = subString(lval, mval, rval); break;
         default: break;
     }
     //printf("[*] result: %d\n", result.value.integer);
@@ -348,29 +349,31 @@ Token evalAssign(Token lval, Token rval){
     }
     else { result.type = ERROR; return result; }
 }
-
+// (sub(((("abc123"))),(3),(3)))
+// sub("abc123",(3),(5))
+// sub("abc123",3,5)
+// (sub((((abc123))),(3),(5)))
 Token subString(Token src, Token lval, Token rval){
     Token result;
     if(lval.type != TOKEN_INTEGER && rval.type != TOKEN_INTEGER){
+        printf("aaa\n");
         result.type = ERROR; return result;
     }
-    if(src.type == TOKEN_STRING){
-        result.type = ERROR; return result;
-    }
+
     //String 대신 Token이 들어가는 경우
     if(src.type == TOKEN_ID && src.varType == STRING){
         int idx = checkIdx(src.value.id);
         if(idx == ERROR){
+            printf("bbbb\n");
             result.type = ERROR; return result;
         }
         src.value.string = symbol_table[idx].token.value.string;
         src.type = TOKEN_STRING;
     }
-    else{
-        result.type = ERROR; return result;
-    }
+    else if(src.type != TOKEN_STRING){ printf("[*] src.type = %d\n", src.type);result.type = ERROR; return result; }
     int sp = lval.value.integer; int size = rval.value.integer;
-    if(sp > strlen(src.value.string) || strlen(src.value.string) < size){
+    if(sp > strlen(src.value.string) || strlen(src.value.string) - sp < size){
+        printf("dddd\n");
         result.type = ERROR; return result;
     }
     printf("======subString======\n");

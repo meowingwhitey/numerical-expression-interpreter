@@ -1,6 +1,16 @@
 #pragma once
 #include "parser.h"
-
+/*
+    A -> id A' | F' T' E' 
+    A' -> = A | T' E’
+    E -> TE’// 아래 sub에서 사용해서 다시 추가 
+    E' -> + T E‘ | - F T' | ε 
+    T -> F T' 
+    T' -> * F T' | / F T' | ε 
+    F -> id | F'
+    F' -> ( A ) | inum | fnum | S | - F | sub(A, E, E)
+    S -> str
+*/
 /* Grammers */
 Node* all();
 Node* restAll();
@@ -263,13 +273,12 @@ Node* restFactor(){
     if(lookahead.type == TOKEN_LP){
         scanToken();
         Node* a = all();
-        if(a == NULL){
+        if(a == NULL || lookahead.type != TOKEN_RP){
             error_detect = TRUE; return NULL;
         }
-        if(lookahead.type != TOKEN_RP){
-            error_detect = TRUE; return NULL;
+        else{
+            scanToken(); return a;
         }
-        else { scanToken(); return a; }
     }
     /* inum | fnum */
     else if(lookahead.type == TOKEN_INTEGER || lookahead.type == TOKEN_REAL){
@@ -294,9 +303,9 @@ Node* restFactor(){
         sub->right = f;
         return sub;
     }
-    /* sub(S, E, E) | sub(id, E, E) */
+    /* sub(A, E, E) */
     else if(lookahead.type == TOKEN_SUB_STRING){
-        printf("[*]sub(S, E, E): %s\n", yytext);
+        printf("[*]sub(A, E, E): %s\n", yytext);
         Node* sub_str = createNode(lookahead);
         scanToken();
         //lookahead가 "("가 아닌 경우 
@@ -304,21 +313,13 @@ Node* restFactor(){
             error_detect = TRUE; return NULL;
         }
         scanToken();
-        //src가 id일때
-        if(lookahead.type == TOKEN_ID){
-            sub_str->token.value.id = lookahead.value.id;
-            printf("[*] sub_str->token.value.id: %s\n", sub_str->token.value.id);
-            scanToken();
+        Node* a = all();
+        //scanToken();
+        if(a == NULL){
+            error_detect = TRUE; return NULL;
         }
-        else{
-            Node* str = string();
-            if(str == NULL){
-                error_detect = TRUE; return NULL;
-            }
-            sub_str->token.value.string = str->token.value.string;
-            printf("[*] sub_str->token.value.string: %s\n", sub_str->token.value.string);
-            scanToken();
-        }
+        printf("[*]sub(A, %d\n", a->token.type);
+        sub_str->left = a;
         //lookahead가 ","가 아닌 경우 
         if(strcmp(yytext, ",") != 0 ){
             error_detect = TRUE; return NULL;
@@ -342,7 +343,7 @@ Node* restFactor(){
             error_detect = TRUE; return NULL;
         }
         scanToken();
-        sub_str->left = expr1; sub_str->right = expr2;
+        sub_str->middle = expr1; sub_str->right = expr2;
         return sub_str;
     }
     else{ error_detect = TRUE; return NULL; }

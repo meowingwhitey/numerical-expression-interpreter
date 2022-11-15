@@ -46,6 +46,7 @@ Node* createNode(Token token){
     Node* temp = (Node*)malloc(sizeof(Node));
     temp->token = token;
     temp->left = NULL; temp->right = NULL;
+    temp->middle = NULL;
     return temp;
 }
 void printToken(Token token){
@@ -76,7 +77,7 @@ void printEval(){
 }
 
 void syntaxError(){
-    printf("Syntax error in line %d, Unexpected token 0x%X\n", yylineno, yytext);
+    printf("Syntax error in line %d, Unexpected token %s\n", yylineno, yytext);
 }
 void runtimeError(){
     printf("Runtime error in line %d \n", yylineno - 1);
@@ -98,8 +99,10 @@ void printAST(Node* ast){
             switch(token.type){
                 case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV: case TOKEN_ASSIGN:
                     if(cur->left != NULL){ child_num ++; }
+                    if(cur->middle != NULL){ child_num ++; }
                     if(cur->right != NULL){ child_num ++; }
                     printf("%c%d  ", token.value.operator, child_num); child_num = 0; break;
+                case TOKEN_SUB_STRING: printf("%s  ", "sub"); break;
                 case TOKEN_ID: printf("%s  ", token.value.id); break;
                 case TOKEN_STRING: printf("\"%s\"  ", token.value.string); break;
                 case TOKEN_INTEGER: printf("%d  ", token.value.integer); break;
@@ -108,6 +111,9 @@ void printAST(Node* ast){
             }
             if (cur->left != NULL)	{
                 enqueue(head, cur->left); queueSize ++;
+            }
+            if (cur->middle != NULL)	{
+                enqueue(head, cur->middle); queueSize ++;
             }
             if (cur->right != NULL){
                 enqueue(head, cur->right); queueSize ++;

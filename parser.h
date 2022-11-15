@@ -1,21 +1,3 @@
-/* 
-* E -> T E' => T + TE' | T - TE'
-* E' -> + T E' | ε => E' -> + T + T E'
-* T -> F T' => T -> F * F T'
-* T' -> * F T' | ε => T' -> * F * F T'
-* F -> Int | Real
-*/
-/*
-    A -> id A' | F' T' E' 
-    A' -> = A | T' E’
-    E -> TE’// 아래 sub에서 사용해서 다시 추가 
-    E' -> + T E‘ | - F T' | ε 
-    T -> F T' 
-    T' -> * F T' | / F T' | ε 
-    F -> id | F'
-    F' -> ( A ) | inum | fnum | S | - F |  sub(id, E, E) | sub(S, E, E) | 
-    S -> str
-*/
 #pragma once
 #define MAX_TABLE_SIZE 100
 #define MAX_TOKEN_SIZE 1000
@@ -58,6 +40,8 @@ typedef struct Token{
 typedef struct TreeNode {
     Token token;
     struct TreeNode* left;
+    // sub 연산용
+    struct TreeNode* middle;
     struct TreeNode* right;
 }Node;
 

@@ -17,7 +17,7 @@
 [0-9]*[.][0-9]+   { /* REAL */ return TOKEN_REAL; }
 0|[1-9][0-9]*   { /* INTEGER */ return TOKEN_INTEGER; }
 [_A-Za-z]+[_A-Za-z0-9]* { /* IDENTIFIER */ return TOKEN_ID; }
-\"[A-Za-z]*\" { 
+\"([^\\\"]|\\.)*\" { 
   /* STRING */ 
   int size = strlen(yytext);
   strncpy(yytext, yytext + 1, size - 2);
