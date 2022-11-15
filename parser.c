@@ -32,10 +32,10 @@ int main(void){
         if(error_detect == TRUE){
             error_detect = FALSE;
             free(error_token); error_token = NULL;
+            ast = NULL;
             syntaxError();
             continue;
         }
-        printAST(ast);
         printEval();
     } 
     finalize();
@@ -142,7 +142,6 @@ void printSymbol(){
 
 int installID(char* name, Token token){
     int size = symbol_table_size;
-    printf("[*] Install Id: %s\n", name);
     // variable 길이 제한
     int id_length = strlen(name);
     if(id_length > 10){
@@ -162,7 +161,6 @@ const char* TOKEN_TYPE_STRING(TokenType type){
     return NULL;
 }
 int checkIdx(char* name){
-    printf("checking...\n");
     int id_length = strlen(name);
     if(id_length > 10){
         name[10] = NULL;
@@ -172,7 +170,6 @@ int checkIdx(char* name){
             return i;
         }
     }
-    printf("check done!\n");
     return ERROR;
 }
 

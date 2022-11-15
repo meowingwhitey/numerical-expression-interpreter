@@ -29,17 +29,18 @@ Token evalRecursive(Node* cur){
     }
     Token val = cur->token;
     if(val.type == TOKEN_INTEGER || val.type == TOKEN_REAL || val.type == TOKEN_STRING){
-        printf("========evalRecursive========\n");
-        printf("[*] value: %d\n", val.value.integer);
+        //printf("========evalRecursive========\n");
+        //printf("[*] value: %d\n", val.value.integer);
         return val;
     }
     Token lval = evalRecursive(cur->left);
     Token mval = evalRecursive(cur->middle);
     Token rval = evalRecursive(cur->right);
+    /*
     printf("=========evalRecursive=======\n");
     printf("[*] token: %d\n", val.type);
     printf("[*] lval: %d, rval: %d\n", lval.type, rval.type);
-    
+    */
     /* 연산 케이스 별로 나눠서 진행 */
     switch(val.type){
         case TOKEN_ADD: result = evalAdd(lval, rval); break;
@@ -350,9 +351,11 @@ Token evalDiv(Token lval, Token rval){
 
 Token evalAssign(Token lval, Token rval){
     Token result;
+    /*
     printf("======evalAssign======\n");
     printf("[*] lval: %s, rval: %d\n", lval.value.id, rval.value.integer);
     printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
+    */
     //좌변이 id가 아니면 Assign 자체가 불가능
     if(lval.type != TOKEN_ID){
         result.type = ERROR;
@@ -405,14 +408,9 @@ Token evalAssign(Token lval, Token rval){
     }
     else { result.type = ERROR; return result; }
 }
-// (sub(((("abc123"))),(3),(3)))
-// sub("abc123",(3),(5))
-// sub("abc123",3,5)
-// (sub((((abc123))),(3),(5)))
 Token subString(Token src, Token lval, Token rval){
     Token result;
     if(lval.type != TOKEN_INTEGER && rval.type != TOKEN_INTEGER){
-        printf("aaa\n");
         result.type = ERROR; return result;
     }
 
@@ -420,22 +418,22 @@ Token subString(Token src, Token lval, Token rval){
     if(src.type == TOKEN_ID && src.varType == STRING){
         int idx = checkIdx(src.value.id);
         if(idx == ERROR){
-            printf("bbbb\n");
             result.type = ERROR; return result;
         }
         src.value.string = symbol_table[idx].token.value.string;
         src.type = TOKEN_STRING;
     }
-    else if(src.type != TOKEN_STRING){ printf("[*] src.type = %d\n", src.type);result.type = ERROR; return result; }
+    else if(src.type != TOKEN_STRING){ result.type = ERROR; return result; }
     int sp = lval.value.integer; int size = rval.value.integer;
     if(sp > strlen(src.value.string) || strlen(src.value.string) - sp < size){
-        printf("dddd\n");
         result.type = ERROR; return result;
     }
+    /*
     printf("======subString======\n");
     printf("[*] string: %s\n", src.value.string);
     printf("[*] lval: %d, rval: %d\n", lval.value.integer, rval.value.integer);
     printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
+    */
     char* sub_str = (char*)malloc(size + 1);
     memcpy(sub_str, src.value.string + sp, size);
     sub_str[size + 1] = NULL;

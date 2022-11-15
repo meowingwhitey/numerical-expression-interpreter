@@ -35,14 +35,12 @@ extern char* error_token;
 
 Node* all(){
     if(lookahead.type == BLANK){ return NULL; }
-    printf("%s: %s\n", "A", yytext);
+    //printf("%s: %s\n", "A", yytext);
     /* id A' */
     if(lookahead.type == TOKEN_ID){
-        printf("[*]TOKEN_ID OK\n");
         Node* id = createNode(lookahead);
         scanToken();
         Node* ra = restAll();
-        printf("ra: 0x%X\n", ra);
         if(ra == NULL){
             return id;
         }
@@ -96,10 +94,9 @@ Node* all(){
 
 Node* restAll(){
     if(lookahead.type == BLANK){ return NULL; }
-    printf("%s: %s\n", "A\'", yytext);
+    //printf("%s: %s\n", "A\'", yytext);
     /* = A */
     if(lookahead.type == TOKEN_ASSIGN){
-        printf("[*]TOKEN_ASSIGN OK\n");
         Node* op = createNode(lookahead);
         scanToken();
         Node* a = all();
@@ -136,7 +133,7 @@ Node* restAll(){
 
 Node* expr(){
     if(lookahead.type == BLANK){ return NULL; }
-    printf("%s: %s\n", "E", yytext);
+    //printf("%s: %s\n", "E", yytext);
     /* T E’ */
     Node* t = term();
     if(t == NULL){
@@ -159,7 +156,7 @@ Node* expr(){
 
 Node* restExpr(){
     if(lookahead.type == BLANK){ return NULL; }
-    printf("%s: %s\n", "E\'", yytext);
+    //printf("%s: %s\n", "E\'", yytext);
     /* + T E' | -  T E' */
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
         Node* op = createNode(lookahead);
@@ -172,7 +169,6 @@ Node* restExpr(){
             //detectError();
             return NULL;
         }
-        printf("5252\n");
         op->right = t;
         Node* re = restExpr();
         if(re == NULL){
@@ -192,7 +188,7 @@ Node* restExpr(){
 Node* term(){
     if(lookahead.type == BLANK){ return NULL; }
     /* F T' */
-    printf("%s: %s\n", "T", yytext);
+    //printf("%s: %s\n", "T", yytext);
     Node* f = factor();
     if(f == NULL){
         error_detect = TRUE;
@@ -216,7 +212,7 @@ Node* term(){
 
 Node* restTerm(){
     if(lookahead.type == BLANK){ return NULL; }
-    printf("%s: %s\n", "T\'", yytext);
+    //printf("%s: %s\n", "T\'", yytext);
     /* * F T' | / F T' */
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
         Node* op = createNode(lookahead);
@@ -246,7 +242,7 @@ Node* restTerm(){
 
 Node* factor(){
     if(lookahead.type == BLANK){ return NULL; }
-    printf("%s: %s\n", "F", yytext);
+    //printf("%s: %s\n", "F", yytext);
     /* id */
     if(lookahead.type == TOKEN_ID){
         Node* num = createNode(lookahead);
@@ -268,7 +264,7 @@ Node* factor(){
 
 Node* restFactor(){
     if(lookahead.type == BLANK){ return NULL; }
-    printf("%s: %s\n", "F\'", yytext);
+    //printf("%s: %s\n", "F\'", yytext);
     /* ( A ) */
     if(lookahead.type == TOKEN_LP){
         scanToken();
@@ -305,7 +301,7 @@ Node* restFactor(){
     }
     /* sub(A, E, E) */
     else if(lookahead.type == TOKEN_SUB_STRING){
-        printf("[*]sub(A, E, E): %s\n", yytext);
+        //printf("[*]sub(A, E, E): %s\n", yytext);
         Node* sub_str = createNode(lookahead);
         scanToken();
         //lookahead가 "("가 아닌 경우 
@@ -318,7 +314,7 @@ Node* restFactor(){
         if(a == NULL){
             error_detect = TRUE; return NULL;
         }
-        printf("[*]sub(A, %d\n", a->token.type);
+        //printf("[*]sub(A, %d\n", a->token.type);
         sub_str->left = a;
         //lookahead가 ","가 아닌 경우 
         if(strcmp(yytext, ",") != 0 ){
@@ -351,7 +347,7 @@ Node* restFactor(){
 
 Node* string(){
     if(lookahead.type == BLANK){ return NULL; }
-    printf("%s: %s\n", "S", yytext);
+    //printf("%s: %s\n", "S", yytext);
     if(lookahead.type == TOKEN_STRING){
         //printf("%s: %s\n", "S", yytext);
         Node* str = createNode(lookahead);
