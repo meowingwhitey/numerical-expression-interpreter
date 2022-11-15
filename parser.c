@@ -62,25 +62,25 @@ void printToken(Token token){
                 printToken(symbol_table[idx].token);
             }
             // id가 table에 없음
-            else{ printf("Runtime Error: undefined variable \"%s\"\n", token.value.string); }
+            else{ runtimeError(); printf("undefined variable %s.\n", token.value.string); }
         break;
-        default: runtimeError(); break;
+        default: runtimeError(); printf("undefined error.\n", token.value.string); break;
     }
     return;
 }
 
 void printEval(){
     Token result = evalRecursive(ast);
-    //printf("printEval: %d\n", result.type);
+    if(result.type == ERROR){ return; }
     printToken(result);
     return;
 }
 
 void syntaxError(){
-    printf("Syntax error in line %d, Unexpected token %s\n", yylineno, yytext);
+    printf("Syntax error in line %d, Unexpected token %s\n", yylineno, error_token);
 }
 void runtimeError(){
-    printf("Runtime error in line %d \n", yylineno - 1);
+    printf("Runtime Error in line #%d: ", yylineno - 1);
 }
 void printAST(Node* ast){
     int queueSize = 0;
@@ -134,7 +134,7 @@ void printSymbol(){
             case TOKEN_INTEGER: printf("%d ", token.value.integer); break;
             case TOKEN_REAL: printf("%lf ", token.value.real); break;
             case TOKEN_STRING: printf("\"%s\" ", token.value.string); break;
-            default: printf("Runtime Error: wrong variable assign.\n"); break;
+            default: runtimeError(); printf("wrong variable assign.\n"); break;
         }
         printf("%s \n", TOKEN_TYPE_STRING(token.type));
     }
@@ -151,20 +151,21 @@ int installID(char* name, Token token){
     symbol_table[size].token = token;
     return symbol_table_size++;
 }
+
 const char* TOKEN_TYPE_STRING(TokenType type){
     switch(type){
-        case TOKEN_INTEGER: return "INT";
-        case TOKEN_REAL: return "REAL";
-        case TOKEN_STRING: return "STRING";
-        default: printf("Runtime Error: wrong variable assign.\n"); break;
+        case TOKEN_INTEGER: return "INT"; break;
+        case TOKEN_REAL: return "REAL"; break;
+        case TOKEN_STRING: return "STRING"; break;
+        case TOKEN_ID: return "VARIABLE"; break;
+        default: runtimeError(); printf("wrong variable assign.\n"); break;
     }
     return NULL;
 }
+
 int checkIdx(char* name){
     int id_length = strlen(name);
-    if(id_length > 10){
-        name[10] = NULL;
-    }
+    if(id_length > 10){ name[10] = NULL; }
     for(int i = 0; i < symbol_table_size; i++){
         if(strcmp(symbol_table[i].name, name) == 0){
             return i;

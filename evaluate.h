@@ -51,7 +51,7 @@ Token evalRecursive(Node* cur){
         case TOKEN_ID: result = val; break;
         case TOKEN_SUB_STRING: 
             result = subString(lval, mval, rval); break;
-        default: break;
+        default: runtimeError(); printf("undefined operator.\n"); break;
     }
     //printf("[*] result: %d\n", result.value.integer);
     return result;
@@ -106,7 +106,7 @@ Token evalAdd(Token lval, Token rval){
             int idx = checkIdx(rval.value.id);
             if(idx == ERROR){
                 result.type = ERROR;
-                printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+                runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
                 return result;
             }
             return evalAdd(lval, symbol_table[idx].token);
@@ -128,7 +128,7 @@ Token evalAdd(Token lval, Token rval){
             int idx = checkIdx(lval.value.id);
             if(idx == ERROR){
                 result.type = ERROR;
-                printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+                runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
                 return result;
             }
             return evalAdd(symbol_table[idx].token, rval);
@@ -141,13 +141,13 @@ Token evalAdd(Token lval, Token rval){
         int lval_idx = checkIdx(lval.value.id);
         if(lval_idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+            runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
             return result;
         }
         int rval_idx = checkIdx(rval.value.id);
          if(rval_idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+            runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
             return result;
         }
         return evalAdd(symbol_table[lval_idx].token, symbol_table[rval_idx].token);
@@ -156,7 +156,7 @@ Token evalAdd(Token lval, Token rval){
         int idx = checkIdx(lval.value.id);
         if(idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+            runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
             return result;
         }
         return evalAdd(symbol_table[idx].token, rval);
@@ -165,14 +165,14 @@ Token evalAdd(Token lval, Token rval){
         int idx = checkIdx(rval.value.id);
         if(idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+            runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
             return result;
         }
         return evalAdd(lval, symbol_table[idx].token);
     }
     else{
         result.type = ERROR;
-        //runtimeError();
+        runtimeError(); printf("%s + %s is not defined.\n", TOKEN_TYPE_STRING(rval.type), TOKEN_TYPE_STRING(lval.type));
         return result;
     }
     //printf("[*] result: %d\n", result.value.integer);
@@ -211,7 +211,7 @@ Token evalSub(Token lval, Token rval){
         int idx = checkIdx(lval.value.id);
         if(idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+            runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
             return result;
         }
         return evalSub(symbol_table[idx].token, rval);
@@ -220,14 +220,14 @@ Token evalSub(Token lval, Token rval){
         int idx = checkIdx(rval.value.id);
         if(idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+            runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
             return result;
         }
         return evalSub(lval, symbol_table[idx].token);
     }
     else{
         result.type = ERROR;
-        //runtimeError();
+        runtimeError(); printf("%s - %s is not defined.\n", TOKEN_TYPE_STRING(rval.type), TOKEN_TYPE_STRING(lval.type));
         return result;
     }
     //printf("[*] result: %d\n", result.value.integer);
@@ -272,7 +272,7 @@ Token evalMul(Token lval, Token rval){
         int idx = checkIdx(lval.value.id);
         if(idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+            runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
             return result;
         }
         return evalMul(symbol_table[idx].token, rval);
@@ -281,14 +281,14 @@ Token evalMul(Token lval, Token rval){
         int idx = checkIdx(rval.value.id);
         if(idx == ERROR){
             result.type = ERROR;
-            printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+            runtimeError(); printf("variable %s is not defined.\n", rval.value.id);
             return result;
         }
         return evalMul(lval, symbol_table[idx].token);
     }
     else{
         result.type = ERROR;
-        //runtimeError();
+        runtimeError(); printf("%s * %s is not defined.\n", TOKEN_TYPE_STRING(rval.type), TOKEN_TYPE_STRING(lval.type));
         return result;
     }
     //printf("[*] result: %d\n", result.value.integer);
@@ -352,7 +352,7 @@ Token evalDiv(Token lval, Token rval){
     }
     else{
         result.type = ERROR;
-        //runtimeError();
+        runtimeError(); printf("%s / %s is not defined.\n", TOKEN_TYPE_STRING(rval.type), TOKEN_TYPE_STRING(lval.type));
         return result;
     }
     //printf("[*] result: %d\n", result.value.integer);
@@ -369,6 +369,7 @@ Token evalAssign(Token lval, Token rval){
     //좌변이 id가 아니면 Assign 자체가 불가능
     if(lval.type != TOKEN_ID){
         result.type = ERROR;
+        runtimeError(); printf("%s = %s is not defined.\n", TOKEN_TYPE_STRING(rval.type), TOKEN_TYPE_STRING(lval.type)); 
         return result;   
     }
     // 우변이 할당 가능한 값이어야됨
@@ -398,7 +399,9 @@ Token evalAssign(Token lval, Token rval){
         int r_idx = ERROR;
         r_idx = checkIdx(rval.value.id);
         if(r_idx == ERROR){
-            result.type = ERROR; return result;
+            result.type = ERROR; 
+            runtimeError(); printf("variable %s is not defined.\n", rval.value.id); 
+            return result;
         }
         Token rval_token = symbol_table[r_idx].token;
         int l_idx = ERROR;
@@ -409,34 +412,43 @@ Token evalAssign(Token lval, Token rval){
             symbol_table[l_idx].token = rval_token;
             return symbol_table[l_idx].token;
         }   
-
         // 새로 선언되는 변수
         else{
             l_idx = installID(lval.value.id, rval_token);
             return symbol_table[l_idx].token;
         }        
     }
-    else { result.type = ERROR; return result; }
+    else { 
+        result.type = ERROR; 
+        runtimeError(); printf("%s = %s is not defined.\n", TOKEN_TYPE_STRING(rval.type), TOKEN_TYPE_STRING(lval.type)); 
+        return result; }
 }
 Token subString(Token src, Token lval, Token rval){
     Token result;
     if(lval.type != TOKEN_INTEGER && rval.type != TOKEN_INTEGER){
-        result.type = ERROR; return result;
+        result.type = ERROR; runtimeError(); printf("start index and slice length must have integer value.\n"); return result;
     }
 
     //String 대신 Token이 들어가는 경우
     if(src.type == TOKEN_ID && src.varType == STRING){
         int idx = checkIdx(src.value.id);
         if(idx == ERROR){
-            result.type = ERROR; return result;
+            result.type = ERROR; runtimeError(); printf("variable %s is not defined.\n", src.value.id); return result;
         }
         src.value.string = symbol_table[idx].token.value.string;
         src.type = TOKEN_STRING;
     }
-    else if(src.type != TOKEN_STRING){ result.type = ERROR; return result; }
+    else if(src.type != TOKEN_STRING){ result.type = ERROR; runtimeError(); printf("variable %s is not string type.\n", rval.value.id); return result; }
     int sp = lval.value.integer; int size = rval.value.integer;
-    if(sp > strlen(src.value.string) || strlen(src.value.string) - sp < size){
-        result.type = ERROR; return result;
+    if(sp > strlen(src.value.string)){
+        result.type = ERROR; 
+        runtimeError(); printf("start index is lower than string length.\n"); 
+        return result;
+    }
+    if(strlen(src.value.string) - sp < size){
+        result.type = ERROR; 
+        runtimeError(); printf("slice length is bigger than string length.\n"); 
+        return result;
     }
     /*
     printf("======subString======\n");
