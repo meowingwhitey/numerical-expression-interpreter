@@ -64,7 +64,12 @@ Token evalAdd(Token lval, Token rval){
     printf("[*] lval: %d, rval: %d\n", lval.value.integer, rval.value.integer);
     printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
     */
-    if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_INTEGER){
+    if(lval.type == ERROR && (rval.type == TOKEN_INTEGER || rval.type == TOKEN_REAL)){
+        result.type = rval.type;
+        if(rval.type == TOKEN_INTEGER){ result.value.integer = rval.value.integer; }
+        else if(rval.type == TOKEN_REAL){ result.value.real = rval.value.real; }
+    }
+    else if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_INTEGER){
         result.type = TOKEN_INTEGER;
         result.value.integer = lval.value.integer + rval.value.integer;
     }
@@ -181,7 +186,12 @@ Token evalSub(Token lval, Token rval){
     printf("[*] lval: %d, rval: %d\n", lval.value.integer, rval.value.integer);
     printf("[*] ltype: %d, rtype: %d\n", lval.type, rval.type);
     */
-    if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_INTEGER){
+    if(lval.type == ERROR && (rval.type == TOKEN_INTEGER || rval.type == TOKEN_REAL)){
+        result.type = rval.type;
+        if(rval.type == TOKEN_INTEGER){ result.value.integer = -1 * rval.value.integer; }
+        else if(rval.type == TOKEN_REAL){ result.value.real = -1 * rval.value.real; }
+    }
+    else if(lval.type == TOKEN_INTEGER && rval.type == TOKEN_INTEGER){
         result.type = TOKEN_INTEGER;
         result.value.integer = lval.value.integer - rval.value.integer;
     }

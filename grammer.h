@@ -8,7 +8,7 @@
     T -> F T' 
     T' -> * F T' | / F T' | ε 
     F -> id | F'
-    F' -> ( A ) | inum | fnum | S | - F | sub(A, E, E)
+    F' -> ( A ) | inum | fnum | S | - F | + F | sub(A, E, E)
     S -> str
 */
 /* Grammers */
@@ -298,6 +298,18 @@ Node* restFactor(){
         }
         sub->right = f;
         return sub;
+    }
+    /* + F */
+    else if(lookahead.type == TOKEN_ADD){
+        Node* add = createNode(lookahead);
+        scanToken();
+        Node* f = factor();
+        if(f == NULL){
+            error_detect = TRUE;
+            return NULL;
+        }
+        add->right = f;
+        return add;
     }
     /* sub(A, E, E) */
     else if(lookahead.type == TOKEN_SUB_STRING){
