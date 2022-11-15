@@ -381,11 +381,11 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[43] =
     {   0,
-        0,    0,   20,   18,   17,   16,   18,   18,    6,    7,
+        0,    0,   20,   18,   16,   15,   18,   18,    6,    7,
         3,    1,    8,    2,   18,    4,   11,   11,    5,   12,
-       12,    0,   13,    0,    0,    0,   10,    0,    0,   11,
-       12,   12,   12,    0,    0,    9,   14,    0,    0,    0,
-       15,    0
+       12,    0,   17,    0,    0,    0,   10,    0,    0,   11,
+       12,   12,   12,    0,    0,    9,   13,    0,    0,    0,
+       14,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -480,7 +480,7 @@ static const flex_int16_t yy_chk[102] =
 /* Table of booleans, true if rule could match eol. */
 static const flex_int32_t yy_rule_can_match_eol[20] =
     {   0,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 
         };
 
 static yy_state_type yy_last_accepting_state;
@@ -850,9 +850,35 @@ YY_RULE_SETUP
 { /* IDENTIFIER */ return TOKEN_ID; }
 	YY_BREAK
 case 13:
-/* rule 13 can match eol */
 YY_RULE_SETUP
 #line 20 "exp.l"
+{ printAST(ast); }
+	YY_BREAK
+case 14:
+YY_RULE_SETUP
+#line 21 "exp.l"
+{ printSymbol(); }
+	YY_BREAK
+case 15:
+/* rule 15 can match eol */
+YY_RULE_SETUP
+#line 22 "exp.l"
+{ return BLANK; }
+	YY_BREAK
+case 16:
+/* rule 16 can match eol */
+YY_RULE_SETUP
+#line 23 "exp.l"
+;
+	YY_BREAK
+case YY_STATE_EOF(INITIAL):
+#line 24 "exp.l"
+{ return END_OF_FILE; }
+	YY_BREAK
+case 17:
+/* rule 17 can match eol */
+YY_RULE_SETUP
+#line 25 "exp.l"
 { 
   /* STRING */ 
   int size = strlen(yytext);
@@ -860,32 +886,6 @@ YY_RULE_SETUP
   yytext[size - 2] = NULL;
   return TOKEN_STRING; 
   }
-	YY_BREAK
-case 14:
-YY_RULE_SETUP
-#line 27 "exp.l"
-{ printAST(ast); }
-	YY_BREAK
-case 15:
-YY_RULE_SETUP
-#line 28 "exp.l"
-{ printSymbol(); }
-	YY_BREAK
-case 16:
-/* rule 16 can match eol */
-YY_RULE_SETUP
-#line 29 "exp.l"
-{ return BLANK; }
-	YY_BREAK
-case 17:
-/* rule 17 can match eol */
-YY_RULE_SETUP
-#line 30 "exp.l"
-;
-	YY_BREAK
-case YY_STATE_EOF(INITIAL):
-#line 31 "exp.l"
-{ return END_OF_FILE; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP

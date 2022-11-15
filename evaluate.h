@@ -307,6 +307,38 @@ Token evalDiv(Token lval, Token rval){
         result.type = TOKEN_REAL;
         result.value.real = lval.value.real / rval.value.integer;
     }
+    else if(lval.type == TOKEN_STRING && rval.type == TOKEN_STRING){
+        char* l_str = lval.value.string; char* r_str = rval.value.string;
+        int length = strlen(r_str); int repeat = 0;
+        while(TRUE){
+            if(length * repeat > strlen(l_str) - 1){ break; }
+            if(strncmp(l_str + (length * repeat), r_str, length) == 0){
+                repeat ++; continue;
+            }
+            break;
+        }
+        result.type = TOKEN_INTEGER;
+        result.value.integer = repeat;
+        return result;
+    }
+    else if(lval.type == TOKEN_ID){
+        int idx = checkIdx(lval.value.id);
+        if(idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", lval.value.id);
+            return result;
+        }
+        return evalDiv(symbol_table[idx].token, rval);
+    }
+    else if(rval.type == TOKEN_ID){
+        int idx = checkIdx(rval.value.id);
+        if(idx == ERROR){
+            result.type = ERROR;
+            printf("Runtime Error: variable %s is not defined.\n", rval.value.id);
+            return result;
+        }
+        return evalDiv(lval, symbol_table[idx].token);
+    }
     else{
         result.type = ERROR;
         //runtimeError();
