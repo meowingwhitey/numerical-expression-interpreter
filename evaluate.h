@@ -330,12 +330,14 @@ Token evalAssign(Token lval, Token rval){
     if(rval.type == TOKEN_INTEGER || rval.type == TOKEN_REAL || rval.type == TOKEN_STRING){
         int idx = ERROR;
         idx = checkIdx(lval.value.id);
+        /*
         switch(rval.type){
             case TOKEN_INTEGER: result.varType = INT; break;
             case TOKEN_REAL: result.varType = REAL; break;
             case TOKEN_STRING: result.varType = STRING; break;
             default: break;
         }
+        */
         // 이미 이전에 선언한 변수
         if(idx != ERROR){
             symbol_table[idx].token = rval;
@@ -346,6 +348,28 @@ Token evalAssign(Token lval, Token rval){
             idx = installID(lval.value.id, rval);
             return symbol_table[idx].token;
         }
+    }
+    else if(rval.type == TOKEN_ID){
+        int r_idx = ERROR;
+        r_idx = checkIdx(rval.value.id);
+        if(r_idx == ERROR){
+            result.type = ERROR; return result;
+        }
+        Token rval_token = symbol_table[r_idx].token;
+        int l_idx = ERROR;
+        l_idx = checkIdx(lval.value.id);
+
+        // 이미 이전에 선언한 변수
+        if(l_idx != ERROR){
+            symbol_table[l_idx].token = rval_token;
+            return symbol_table[l_idx].token;
+        }   
+
+        // 새로 선언되는 변수
+        else{
+            l_idx = installID(lval.value.id, rval_token);
+            return symbol_table[l_idx].token;
+        }        
     }
     else { result.type = ERROR; return result; }
 }
