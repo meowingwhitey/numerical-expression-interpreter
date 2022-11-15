@@ -1,0 +1,19 @@
+10 + 5
+10
+val = 10
+val
+val + 10
+i = j = 20
+val = val + i
+(val + val) * 3
+-val - 100
+hello = "hello"
+hello3 = hello*3
+hello3/"hello"
+sub(hello3, 5, 10)
+3*hello
+abc + 10
+i + j = val
+val << 10
+$ast
+$symbol

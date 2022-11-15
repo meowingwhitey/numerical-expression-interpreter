@@ -59,7 +59,6 @@ void scanToken();
 void syntaxError();
 void lexicalError();
 void runtimeError();
-void typeError();
 
 void printAST();
 void printSymbol();
