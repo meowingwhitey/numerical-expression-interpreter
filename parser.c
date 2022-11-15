@@ -77,7 +77,7 @@ void printEval(){
 }
 
 void syntaxError(){
-    printf("Syntax error in line %d, Unexpected token %s\n", yylineno, error_token);
+    printf("Syntax error in line #%d: Unexpected token %s\n", yylineno - 1, error_token);
 }
 void runtimeError(){
     printf("Runtime Error in line #%d: ", yylineno - 1);
