@@ -33,7 +33,7 @@ extern Node* ast;
 extern int syntax_error;
 
 Node* all(){
-    if(lookahead.type == NEW_LINE){ return NULL; }
+    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     //printf("%s: %s\n", "A", yytext);
     /* id A' */
     if(lookahead.type == TOKEN_ID){
@@ -90,7 +90,7 @@ Node* all(){
 }
 
 Node* restAll(){
-    if(lookahead.type == NEW_LINE){ return NULL; }
+    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     //printf("%s: %s\n", "A\'", yytext);
     /* = A */
     if(lookahead.type == TOKEN_ASSIGN){
@@ -127,7 +127,7 @@ Node* restAll(){
 }
 
 Node* expr(){
-    if(lookahead.type == NEW_LINE){ return NULL; }
+    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     //printf("%s: %s\n", "E", yytext);
     /* T E’ */
     Node* t = term();
@@ -148,7 +148,7 @@ Node* expr(){
 }
 
 Node* restExpr(){
-    if(lookahead.type == NEW_LINE){ return NULL; }
+    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     //printf("%s: %s\n", "E\'", yytext);
     /* + T E' | -  T E' */
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
@@ -176,7 +176,7 @@ Node* restExpr(){
 }
 
 Node* term(){
-    if(lookahead.type == NEW_LINE){ return NULL; }
+    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     /* F T' */
     //printf("%s: %s\n", "T", yytext);
     Node* f = factor();
@@ -199,7 +199,7 @@ Node* term(){
 }
 
 Node* restTerm(){
-    if(lookahead.type == NEW_LINE){ return NULL; }
+    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     //printf("%s: %s\n", "T\'", yytext);
     /* * F T' | / F T' */
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
@@ -227,7 +227,7 @@ Node* restTerm(){
 }
 
 Node* factor(){
-    if(lookahead.type == NEW_LINE){ return NULL; }
+    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     //printf("%s: %s\n", "F", yytext);
     /* id */
     if(lookahead.type == TOKEN_ID){
@@ -247,7 +247,7 @@ Node* factor(){
 }
 
 Node* restFactor(){
-    if(lookahead.type == NEW_LINE){ return NULL; }
+    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     //printf("%s: %s\n", "F\'", yytext);
     /* ( A ) */
     if(lookahead.type == TOKEN_LP){
@@ -350,7 +350,7 @@ Node* restFactor(){
 }
 
 Node* string(){
-    if(lookahead.type == NEW_LINE){ return NULL; }
+    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     //printf("%s: %s\n", "S", yytext);
     if(lookahead.type == TOKEN_STRING){
         //printf("%s: %s\n", "S", yytext);

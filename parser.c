@@ -18,7 +18,7 @@ Node* ast;
 int syntax_error = FALSE;
 int lexical_error = FALSE;
 int char_pos = 0;
-
+char error_str[MAX_LINE_LENGTH];
 int main(void){
     while(TRUE){
         char_pos = 0;
@@ -87,7 +87,7 @@ void printEval(){
 }
 
 void syntaxError(){
-    printf("Syntax error in line #%d: Unexpected token %s\n", yylineno - 1, yytext);
+    printf("Syntax Error in line #%d: Unexpected token %s\n", yylineno - 1, error_str);
 }
 void runtimeError(){
     printf("Runtime Error in line #%d: ", yylineno - 1);
@@ -184,6 +184,41 @@ int checkIdx(char* name){
     return ERROR;
 }
 
+void scanToken(){
+    lookahead.type = yylex();
+    switch(lookahead.type){
+        case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV: 
+        case TOKEN_ASSIGN: case TOKEN_LP: case TOKEN_RP: case TOKEN_SUB_STRING:
+            lookahead.value.operator = yytext[0];
+            strcpy(error_str, yytext);
+            break;
+        case TOKEN_ID:
+            lookahead.value.id = (char*)malloc(strlen(yytext) + 1);
+            strcpy(lookahead.value.id, yytext);
+            strcpy(error_str, yytext);
+            break;
+        case TOKEN_STRING:
+            lookahead.value.string = (char*)malloc(strlen(yytext) + 1);
+            strcpy(lookahead.value.string, yytext);     
+            strcpy(error_str, yytext);      
+            break;
+        case TOKEN_INTEGER:
+            lookahead.value.integer = atoi(yytext);
+            strcpy(error_str, yytext);
+            break;
+        case TOKEN_REAL:
+            lookahead.value.real = atof(yytext);
+            strcpy(error_str, yytext);
+            break;
+        case NEW_LINE:
+            break;
+        default:
+            strcpy(error_str, yytext);
+            break;
+    }
+}
+
 void finalize(){
     return;
 }
+

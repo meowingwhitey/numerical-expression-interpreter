@@ -12,6 +12,7 @@ Token subString(Token string, Token sp, Token ep);
 extern int yylex();
 extern int yylineno;
 extern char* yytext;
+extern char error_str[MAX_LINE_LENGTH];
 
 extern Token lookahead;
 extern Symbol symbol_table[MAX_TABLE_SIZE];
@@ -472,30 +473,4 @@ Token subString(Token src, Token lval, Token rval){
     result.value.string = sub_str;
     result.varType = STRING;
     return result;
-}
-
-void scanToken(){
-    lookahead.type = yylex();    
-    switch(lookahead.type){
-        case TOKEN_ADD: case TOKEN_SUB: case TOKEN_MUL: case TOKEN_DIV: 
-        case TOKEN_ASSIGN: case TOKEN_LP: case TOKEN_RP: case TOKEN_SUB_STRING:
-            lookahead.value.operator = yytext[0];
-            break;
-        case TOKEN_ID:
-            lookahead.value.id = (char*)malloc(strlen(yytext) + 1);
-            strcpy(lookahead.value.id, yytext);
-            break;
-        case TOKEN_STRING:
-            lookahead.value.string = (char*)malloc(strlen(yytext) + 1);
-            strcpy(lookahead.value.string, yytext);           
-            break;
-        case TOKEN_INTEGER:
-            lookahead.value.integer = atoi(yytext);
-            break;
-        case TOKEN_REAL:
-            lookahead.value.real = atof(yytext);
-            break;
-        default:
-            break;
-    }
 }
