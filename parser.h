@@ -16,10 +16,6 @@ typedef enum TokenType{
     TOKEN_ID, TOKEN_INTEGER, TOKEN_REAL, TOKEN_STRING, 
 }TokenType;
 
-typedef enum VariableType{
-    INT = TOKEN_INTEGER, REAL = TOKEN_REAL, STRING = TOKEN_STRING
-}VariableType;
-
 typedef union Value{
     char operator;
     int integer;
@@ -30,9 +26,6 @@ typedef union Value{
 
 typedef struct Token{
     TokenType type;
-    //evaluate에 사용하는 변수 타입
-    //다른 종류의 토큰에선 사용하지 않음
-    VariableType varType;
     Value value;
 }Token;
 

@@ -375,14 +375,6 @@ Token evalAssign(Token lval, Token rval){
     if(rval.type == TOKEN_INTEGER || rval.type == TOKEN_REAL || rval.type == TOKEN_STRING){
         int idx = ERROR;
         idx = checkIdx(lval.value.id);
-        /*
-        switch(rval.type){
-            case TOKEN_INTEGER: result.varType = INT; break;
-            case TOKEN_REAL: result.varType = REAL; break;
-            case TOKEN_STRING: result.varType = STRING; break;
-            default: break;
-        }
-        */
         // 이미 이전에 선언한 변수
         if(idx != ERROR){
             symbol_table[idx].token = rval;
@@ -471,6 +463,5 @@ Token subString(Token src, Token lval, Token rval){
     sub_str[size + 1] = NULL;
     result.type = TOKEN_STRING;
     result.value.string = sub_str;
-    result.varType = STRING;
     return result;
 }
