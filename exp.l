@@ -34,6 +34,7 @@
   }
 . { 
   char_pos += strlen(yytext); 
+  if(lexical_error == TRUE){ return ERROR; };
   lexical_error = TRUE;
   printf("Lexical Error in line #%d(%d): cannot use %s.\n", yylineno, char_pos, yytext);
   return ERROR; 

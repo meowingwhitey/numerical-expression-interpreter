@@ -135,18 +135,18 @@ void printAST(Node* ast){
 }
 
 void printSymbol(){
-    printf("%-5s %-5s %-5s\n", "NAME", "VALUE", "TYPE");
+    printf("%-15s %-15s %-15s\n", "NAME", "VALUE", "TYPE");
     for(int i = 0; i < symbol_table_size; i++){
         Symbol symbol = symbol_table[i];
         Token token = symbol.token;
-        printf("%s ", symbol.name);
+        printf("%-15s ", symbol.name);
         switch(token.type){
-            case TOKEN_INTEGER: printf("%d ", token.value.integer); break;
-            case TOKEN_REAL: printf("%lf ", token.value.real); break;
-            case TOKEN_STRING: printf("\"%s\" ", token.value.string); break;
+            case TOKEN_INTEGER: printf("%-15d ", token.value.integer); break;
+            case TOKEN_REAL: printf("%-15lf ", token.value.real); break;
+            case TOKEN_STRING: printf("%-15s ", token.value.string); break;
             default: runtimeError(); printf("wrong variable assign.\n"); break;
         }
-        printf("%s \n", TOKEN_TYPE_STRING(token.type));
+        printf("%-15s \n", TOKEN_TYPE_STRING(token.type));
     }
 }
 

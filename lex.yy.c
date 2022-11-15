@@ -894,6 +894,7 @@ YY_RULE_SETUP
 #line 35 "exp.l"
 { 
   char_pos += strlen(yytext); 
+  if(lexical_error == TRUE){ return ERROR; };
   lexical_error = TRUE;
   printf("Lexical Error in line #%d(%d): cannot use %s.\n", yylineno, char_pos, yytext);
   return ERROR; 
@@ -901,10 +902,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 42 "exp.l"
+#line 43 "exp.l"
 ECHO;
 	YY_BREAK
-#line 908 "lex.yy.c"
+#line 909 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1919,7 +1920,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 42 "exp.l"
+#line 43 "exp.l"
 
 int yywrap(void){
   return 1;
