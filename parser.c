@@ -15,13 +15,20 @@ Token lookahead;
 Symbol symbol_table[MAX_TABLE_SIZE];
 int symbol_table_size = 0;
 Node* ast;
-int error_detect;
-char* error_token;
+int syntax_error = FALSE;
+int lexical_error = FALSE;
+int char_pos = 0;
 
 int main(void){
     while(TRUE){
+        char_pos = 0;
         printf(">");
         scanToken();
+        if(lexical_error == TRUE){
+            while(yylex() != NEW_LINE){}
+            lexical_error = FALSE;
+            continue;
+        }
         if(yytext[0] == '\n'){
             continue;
         }
@@ -29,11 +36,14 @@ int main(void){
             break;
         }
         ast = all();
-        if(error_detect == TRUE){
-            error_detect = FALSE;
-            free(error_token); error_token = NULL;
+        if(syntax_error == TRUE){
+            syntax_error = FALSE;
             ast = NULL;
-            syntaxError();
+            continue;
+        }
+        if(lexical_error == TRUE){
+            while(yylex() != NEW_LINE){}
+            lexical_error = FALSE;
             continue;
         }
         printEval();
@@ -77,7 +87,7 @@ void printEval(){
 }
 
 void syntaxError(){
-    printf("Syntax error in line #%d: Unexpected token %s\n", yylineno - 1, error_token);
+    printf("Syntax error in line #%d: Unexpected token %s\n", yylineno - 1, yytext);
 }
 void runtimeError(){
     printf("Runtime Error in line #%d: ", yylineno - 1);

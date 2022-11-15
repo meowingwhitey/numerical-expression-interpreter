@@ -30,11 +30,10 @@ extern Token lookahead;
 extern Symbol symbol_table[MAX_TABLE_SIZE];
 extern int symbol_table_size;
 extern Node* ast;
-extern int error_detect;
-extern char* error_token;
+extern int syntax_error;
 
 Node* all(){
-    if(lookahead.type == BLANK){ return NULL; }
+    if(lookahead.type == NEW_LINE){ return NULL; }
     //printf("%s: %s\n", "A", yytext);
     /* id A' */
     if(lookahead.type == TOKEN_ID){
@@ -51,9 +50,7 @@ Node* all(){
     else{
         Node* rf = restFactor();
         if(rf == NULL){
-            error_detect = TRUE;
-            error_token = (char*)malloc(sizeof(strlen(yytext)));
-            strcpy(error_token, yytext);
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
             return NULL;
         }
         Node* rt = restTerm();
@@ -93,7 +90,7 @@ Node* all(){
 }
 
 Node* restAll(){
-    if(lookahead.type == BLANK){ return NULL; }
+    if(lookahead.type == NEW_LINE){ return NULL; }
     //printf("%s: %s\n", "A\'", yytext);
     /* = A */
     if(lookahead.type == TOKEN_ASSIGN){
@@ -101,9 +98,7 @@ Node* restAll(){
         scanToken();
         Node* a = all();
         if(a == NULL){
-            error_detect = TRUE;
-            error_token = (char*)malloc(sizeof(strlen(yytext)));
-            strcpy(error_token, yytext);
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
             return NULL;
         }
         op->right = a;
@@ -132,14 +127,12 @@ Node* restAll(){
 }
 
 Node* expr(){
-    if(lookahead.type == BLANK){ return NULL; }
+    if(lookahead.type == NEW_LINE){ return NULL; }
     //printf("%s: %s\n", "E", yytext);
     /* T E’ */
     Node* t = term();
     if(t == NULL){
-        error_detect = TRUE;
-        error_token = (char*)malloc(sizeof(strlen(yytext)));
-        strcpy(error_token, yytext);
+        if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
         return NULL;
     }
     Node* re = restExpr();
@@ -155,7 +148,7 @@ Node* expr(){
 }
 
 Node* restExpr(){
-    if(lookahead.type == BLANK){ return NULL; }
+    if(lookahead.type == NEW_LINE){ return NULL; }
     //printf("%s: %s\n", "E\'", yytext);
     /* + T E' | -  T E' */
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
@@ -163,10 +156,7 @@ Node* restExpr(){
         scanToken();
         Node* t = term();
         if(t == NULL){
-            error_detect = TRUE;
-            error_token = (char*)malloc(sizeof(strlen(yytext)) + 1);
-            strcpy(error_token, yytext);
-            //detectError();
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
             return NULL;
         }
         op->right = t;
@@ -186,14 +176,12 @@ Node* restExpr(){
 }
 
 Node* term(){
-    if(lookahead.type == BLANK){ return NULL; }
+    if(lookahead.type == NEW_LINE){ return NULL; }
     /* F T' */
     //printf("%s: %s\n", "T", yytext);
     Node* f = factor();
     if(f == NULL){
-        error_detect = TRUE;
-        error_token = (char*)malloc(sizeof(strlen(yytext)));
-        strcpy(error_token, yytext);
+        if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
         return NULL;
     }
     //printf("[*] FACTOR: 0x%X, %d\n", f, f->token.type);
@@ -211,7 +199,7 @@ Node* term(){
 }
 
 Node* restTerm(){
-    if(lookahead.type == BLANK){ return NULL; }
+    if(lookahead.type == NEW_LINE){ return NULL; }
     //printf("%s: %s\n", "T\'", yytext);
     /* * F T' | / F T' */
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
@@ -219,9 +207,7 @@ Node* restTerm(){
         scanToken();
         Node* f = factor();
         if(f == NULL){
-            error_detect = TRUE;
-            error_token = (char*)malloc(sizeof(strlen(yytext)) + 1);
-            strcpy(error_token, yytext);
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
             return NULL;
         }
         op->right = f;
@@ -241,7 +227,7 @@ Node* restTerm(){
 }
 
 Node* factor(){
-    if(lookahead.type == BLANK){ return NULL; }
+    if(lookahead.type == NEW_LINE){ return NULL; }
     //printf("%s: %s\n", "F", yytext);
     /* id */
     if(lookahead.type == TOKEN_ID){
@@ -253,9 +239,7 @@ Node* factor(){
     else{
         Node* rf = restFactor();
         if(rf == NULL){
-            error_detect = TRUE; 
-            error_token = (char*)malloc(sizeof(strlen(yytext)));
-            strcpy(error_token, yytext);
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
             return NULL;
         }
         return rf;
@@ -263,14 +247,15 @@ Node* factor(){
 }
 
 Node* restFactor(){
-    if(lookahead.type == BLANK){ return NULL; }
+    if(lookahead.type == NEW_LINE){ return NULL; }
     //printf("%s: %s\n", "F\'", yytext);
     /* ( A ) */
     if(lookahead.type == TOKEN_LP){
         scanToken();
         Node* a = all();
         if(a == NULL || lookahead.type != TOKEN_RP){
-            error_detect = TRUE; return NULL;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            return NULL;
         }
         else{
             scanToken(); return a;
@@ -293,7 +278,7 @@ Node* restFactor(){
         scanToken();
         Node* f = factor();
         if(f == NULL){
-            error_detect = TRUE;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
             return NULL;
         }
         sub->right = f;
@@ -305,7 +290,7 @@ Node* restFactor(){
         scanToken();
         Node* f = factor();
         if(f == NULL){
-            error_detect = TRUE;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
             return NULL;
         }
         add->right = f;
@@ -318,47 +303,54 @@ Node* restFactor(){
         scanToken();
         //lookahead가 "("가 아닌 경우 
         if(strcmp(yytext, "(") != 0 ){
-            error_detect = TRUE; return NULL;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            return NULL;
         }
         scanToken();
         Node* a = all();
         //scanToken();
         if(a == NULL){
-            error_detect = TRUE; return NULL;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            return NULL;
         }
         //printf("[*]sub(A, %d\n", a->token.type);
         sub_str->left = a;
         //lookahead가 ","가 아닌 경우 
         if(strcmp(yytext, ",") != 0 ){
-            error_detect = TRUE; return NULL;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            return NULL;
         }
         scanToken();
         Node* expr1 = expr();
         if(expr1 == NULL){
-            error_detect = TRUE; return NULL;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            return NULL;
         }
         //lookahead가 ","가 아닌 경우 
         if(strcmp(yytext, ",") != 0 ){
-            error_detect = TRUE; return NULL;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            return NULL;
         }    
         scanToken(); 
         Node* expr2 = expr();
         if(expr2 == NULL){
-            error_detect = TRUE; return NULL;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            return NULL;
         }
         //lookahead가 ")"가 아닌 경우 
         if(strcmp(yytext, ")") != 0 ){
-            error_detect = TRUE; return NULL;
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            return NULL;
         }
         scanToken();
         sub_str->middle = expr1; sub_str->right = expr2;
         return sub_str;
     }
-    else{ error_detect = TRUE; return NULL; }
+    else{ syntax_error = TRUE; return NULL; }
 }
 
 Node* string(){
-    if(lookahead.type == BLANK){ return NULL; }
+    if(lookahead.type == NEW_LINE){ return NULL; }
     //printf("%s: %s\n", "S", yytext);
     if(lookahead.type == TOKEN_STRING){
         //printf("%s: %s\n", "S", yytext);
@@ -366,5 +358,8 @@ Node* string(){
         scanToken();
         return str;
     }
-    else{ error_detect = TRUE; return NULL; }
+    else{ 
+        if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+        return NULL;
+    }
 }

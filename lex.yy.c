@@ -480,7 +480,7 @@ static const flex_int16_t yy_chk[102] =
 /* Table of booleans, true if rule could match eol. */
 static const flex_int32_t yy_rule_can_match_eol[20] =
     {   0,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 
         };
 
 static yy_state_type yy_last_accepting_state;
@@ -501,8 +501,10 @@ char *yytext;
 #line 2 "exp.l"
   #include "parser.h"
   extern Node* ast;
-#line 505 "lex.yy.c"
-#line 506 "lex.yy.c"
+  extern int char_pos;
+  extern int lexical_error;
+#line 507 "lex.yy.c"
+#line 508 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -719,10 +721,10 @@ YY_DECL
 		}
 
 	{
-#line 6 "exp.l"
+#line 8 "exp.l"
 
 
-#line 726 "lex.yy.c"
+#line 728 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -791,113 +793,118 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 8 "exp.l"
-{ /* ADD */ return TOKEN_ADD; }
+#line 10 "exp.l"
+{ /* ADD */ char_pos += strlen(yytext); return TOKEN_ADD; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 9 "exp.l"
-{ /* SUB */ return TOKEN_SUB; }
+#line 11 "exp.l"
+{ /* SUB */ char_pos += strlen(yytext); return TOKEN_SUB; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 10 "exp.l"
-{ /* MUL */ return TOKEN_MUL; }
+#line 12 "exp.l"
+{ /* MUL */ char_pos += strlen(yytext); return TOKEN_MUL; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 11 "exp.l"
-{ /* DIV */ return TOKEN_DIV; }
+#line 13 "exp.l"
+{ /* DIV */ char_pos += strlen(yytext); return TOKEN_DIV; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 12 "exp.l"
-{ /* ASSIGN */ return TOKEN_ASSIGN; }
+#line 14 "exp.l"
+{ /* ASSIGN */ char_pos += strlen(yytext); return TOKEN_ASSIGN; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 13 "exp.l"
-{ /* LP */ return TOKEN_LP; }
+#line 15 "exp.l"
+{ /* LP */ char_pos += strlen(yytext); return TOKEN_LP; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 14 "exp.l"
-{ /* RP */ return TOKEN_RP; }
+#line 16 "exp.l"
+{ /* RP */ char_pos += strlen(yytext); return TOKEN_RP; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 15 "exp.l"
-{ /* COMMA */ return TOKEN_COMMA; }
+#line 17 "exp.l"
+{ /* COMMA */ char_pos += strlen(yytext); return TOKEN_COMMA; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 16 "exp.l"
-{ /*SUB STRING*/ return TOKEN_SUB_STRING; }
+#line 18 "exp.l"
+{ /*SUB STRING*/ char_pos += strlen(yytext); return TOKEN_SUB_STRING; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 17 "exp.l"
-{ /* REAL */ return TOKEN_REAL; }
+#line 19 "exp.l"
+{ /* REAL */ char_pos += strlen(yytext); return TOKEN_REAL; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 18 "exp.l"
-{ /* INTEGER */ return TOKEN_INTEGER; }
+#line 20 "exp.l"
+{ /* INTEGER */ char_pos += strlen(yytext); return TOKEN_INTEGER; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 19 "exp.l"
-{ /* IDENTIFIER */ return TOKEN_ID; }
+#line 21 "exp.l"
+{ /* IDENTIFIER */ char_pos += strlen(yytext); return TOKEN_ID; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 20 "exp.l"
+#line 22 "exp.l"
 { printAST(ast); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 21 "exp.l"
+#line 23 "exp.l"
 { printSymbol(); }
 	YY_BREAK
 case 15:
 /* rule 15 can match eol */
 YY_RULE_SETUP
-#line 22 "exp.l"
-{ return BLANK; }
+#line 24 "exp.l"
+{ return NEW_LINE; }
 	YY_BREAK
 case 16:
-/* rule 16 can match eol */
 YY_RULE_SETUP
-#line 23 "exp.l"
-;
+#line 25 "exp.l"
+{ char_pos += strlen(yytext); };
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 24 "exp.l"
+#line 26 "exp.l"
 { return END_OF_FILE; }
 	YY_BREAK
 case 17:
 /* rule 17 can match eol */
 YY_RULE_SETUP
-#line 25 "exp.l"
+#line 27 "exp.l"
 { 
   /* STRING */ 
   int size = strlen(yytext);
   strncpy(yytext, yytext + 1, size - 2);
   yytext[size - 2] = NULL;
+  char_pos += strlen(yytext);
   return TOKEN_STRING; 
   }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 32 "exp.l"
-{ printf("Lexical Error in line %d. %x\n", yylineno, yytext[0]); return ERROR; }
+#line 35 "exp.l"
+{ 
+  char_pos += strlen(yytext); 
+  lexical_error = TRUE;
+  printf("Lexical Error in line #%d, %d: cannot use %s.\n", yylineno, char_pos, yytext);
+  return ERROR; 
+ }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 34 "exp.l"
+#line 42 "exp.l"
 ECHO;
 	YY_BREAK
-#line 901 "lex.yy.c"
+#line 908 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1912,7 +1919,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 34 "exp.l"
+#line 42 "exp.l"
 
 int yywrap(void){
   return 1;

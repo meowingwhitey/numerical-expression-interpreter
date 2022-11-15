@@ -17,8 +17,6 @@ extern Token lookahead;
 extern Symbol symbol_table[MAX_TABLE_SIZE];
 extern int symbol_table_size;
 extern Node* ast;
-extern int error_detect;
-extern char* error_token;
 
 /* 연산을 위한 Recursive 함수 */
 Token evalRecursive(Node* cur){
