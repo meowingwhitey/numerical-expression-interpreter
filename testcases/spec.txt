@@ -1,0 +1,19 @@
+3+("hello"*3)
+3+"hello"*3
+3 + (sub("hello",2,2) * 3)
+3 + sub("hello",2,2) * 3
+3+3
+3+3.5
+3.5+3.5
+"abc"+"abc"
+"abc"*3
+"abcabcabc"/"abc"
+"abcabc123"/"abc"
+"abc"+123
+"abc"+.123
+sub("abc123", 3, 3)
+hello3 = "hello" * 3
+3*"hello"
+-5*(3+4)
+"abc"+("abc")
+(sub(((("abc123"))), (3), (3)))

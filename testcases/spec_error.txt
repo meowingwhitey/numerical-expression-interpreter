@@ -1,0 +1,5 @@
+"abc"*"3"
+3*"abc"
+sub(hello3, 5, 10 +
+3+hello_3 - 3abc
+

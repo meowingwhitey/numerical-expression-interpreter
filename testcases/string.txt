@@ -1,0 +1,12 @@
+a = "con" + "cate" + "nation"
+b = "string"
+c = a + b
+"pop" * 3
+d = (sub(c, 13, 6))
+re = "abcabcabcabcddd"
+re2 = "abc"
+n = re/re2
+pi = 3.14
+"pi=" + pi
+(sub(((("abc123"))),(3),(3)))
+3 * ("runtime" + "error")
