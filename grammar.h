@@ -3,18 +3,16 @@
 /*
     A -> id A' | F' T' E' 
     A' -> = A | T' E’
-    E -> TE’// 아래 sub에서 사용해서 다시 추가 
     E' -> + T E‘ | - F T' | ε 
     T -> F T' 
     T' -> * F T' | / F T' | ε 
     F -> id | F'
-    F' -> ( A ) | inum | fnum | S | - F | + F | sub(A, E, E)
+    F' -> ( A ) | inum | fnum | S | - F | + F | sub(A, A, A)
     S -> str
 */
 /* Grammers */
 Node* all();
 Node* restAll();
-Node* expr();
 Node* restExpr();
 Node* term();
 Node* restTerm();
@@ -127,26 +125,6 @@ Node* restAll(){
         temp->left = tr;
         return re;       
     }
-}
-
-Node* expr(){
-    if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
-    /* T E’ */
-    Node* t = term();
-    if(t == NULL){
-        /* if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("term"); } */
-        return NULL;
-    }
-    Node* re = restExpr();
-    if(re == NULL){
-        return t;
-    }
-    Node* temp = re;
-    while(temp->left != NULL){
-        temp = temp->left;
-    }
-    temp->left = t;
-    return re;
 }
 
 Node* restExpr(){
