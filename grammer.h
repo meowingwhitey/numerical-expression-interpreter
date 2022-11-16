@@ -34,7 +34,6 @@ extern int syntax_error;
 
 Node* all(){
     if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
-    //printf("%s: %s\n", "A", yytext);
     /* id A' */
     if(lookahead.type == TOKEN_ID){
         Node* id = createNode(lookahead);
@@ -50,7 +49,7 @@ Node* all(){
     else{
         Node* rf = restFactor();
         if(rf == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            /* if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("factor"); } */
             return NULL;
         }
         Node* rt = restTerm();
@@ -98,7 +97,7 @@ Node* restAll(){
         scanToken();
         Node* a = all();
         if(a == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("="); }
             return NULL;
         }
         op->right = a;
@@ -132,7 +131,7 @@ Node* expr(){
     /* T E’ */
     Node* t = term();
     if(t == NULL){
-        if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+        /* if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("term"); } */
         return NULL;
     }
     Node* re = restExpr();
@@ -152,11 +151,16 @@ Node* restExpr(){
     //printf("%s: %s\n", "E\'", yytext);
     /* + T E' | -  T E' */
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
+        TokenType op_type = lookahead.type;
         Node* op = createNode(lookahead);
         scanToken();
         Node* t = term();
         if(t == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { 
+                syntax_error = TRUE; 
+                if(op_type == TOKEN_ADD){ syntaxError("+"); }
+                else{ syntaxError("-"); }
+            }
             return NULL;
         }
         op->right = t;
@@ -181,7 +185,7 @@ Node* term(){
     //printf("%s: %s\n", "T", yytext);
     Node* f = factor();
     if(f == NULL){
-        if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+        /* if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("factor"); } */
         return NULL;
     }
     //printf("[*] FACTOR: 0x%X, %d\n", f, f->token.type);
@@ -203,11 +207,16 @@ Node* restTerm(){
     //printf("%s: %s\n", "T\'", yytext);
     /* * F T' | / F T' */
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
+        TokenType op_type = lookahead.type;
         Node* op = createNode(lookahead);
         scanToken();
         Node* f = factor();
         if(f == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { 
+                syntax_error = TRUE; 
+                if(op_type == TOKEN_MUL){ syntaxError("*"); }
+                else{ syntaxError("/"); }
+            }
             return NULL;
         }
         op->right = f;
@@ -239,7 +248,7 @@ Node* factor(){
     else{
         Node* rf = restFactor();
         if(rf == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            /*if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("factor"); }*/
             return NULL;
         }
         return rf;
@@ -254,7 +263,7 @@ Node* restFactor(){
         scanToken();
         Node* a = all();
         if(a == NULL || lookahead.type != TOKEN_RP){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("()"); }
             return NULL;
         }
         else{
@@ -278,7 +287,7 @@ Node* restFactor(){
         scanToken();
         Node* f = factor();
         if(f == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("-"); }
             return NULL;
         }
         sub->right = f;
@@ -290,7 +299,7 @@ Node* restFactor(){
         scanToken();
         Node* f = factor();
         if(f == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("+"); }
             return NULL;
         }
         add->right = f;
@@ -303,50 +312,50 @@ Node* restFactor(){
         scanToken();
         //lookahead가 "("가 아닌 경우 
         if(strcmp(yytext, "(") != 0 ){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }
         scanToken();
         Node* a = all();
         //scanToken();
         if(a == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }
         //printf("[*]sub(A, %d\n", a->token.type);
         sub_str->left = a;
         //lookahead가 ","가 아닌 경우 
         if(strcmp(yytext, ",") != 0 ){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }
         scanToken();
         Node* expr1 = expr();
         if(expr1 == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }
         //lookahead가 ","가 아닌 경우 
         if(strcmp(yytext, ",") != 0 ){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }    
         scanToken(); 
         Node* expr2 = expr();
         if(expr2 == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }
         //lookahead가 ")"가 아닌 경우 
         if(strcmp(yytext, ")") != 0 ){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }
         scanToken();
         sub_str->middle = expr1; sub_str->right = expr2;
         return sub_str;
     }
-    else{ syntax_error = TRUE; return NULL; }
+    else{ /* syntax_error = TRUE; syntaxError("factor"); */ return NULL; }
 }
 
 Node* string(){
@@ -359,7 +368,7 @@ Node* string(){
         return str;
     }
     else{ 
-        if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError(); }
+        /* if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("STRING"); }*/
         return NULL;
     }
 }

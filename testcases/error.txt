@@ -1,0 +1,2 @@
+sub("string", 0, 3***
+sub("string", 0 + 3)

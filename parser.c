@@ -18,17 +18,15 @@ Node* ast;
 int syntax_error = FALSE;
 int lexical_error = FALSE;
 int char_pos = 0;
+int lineno = 0;
 char error_str[MAX_LINE_LENGTH];
+
 int main(void){
     while(TRUE){
-        char_pos = 0;
+        lexical_error = FALSE; syntax_error = FALSE;
+        char_pos = 0; lineno ++;
         printf(">");
         scanToken();
-        if(lexical_error == TRUE){
-            while(yylex() != NEW_LINE){}
-            lexical_error = FALSE;
-            continue;
-        }
         if(yytext[0] == '\n'){
             continue;
         }
@@ -36,14 +34,12 @@ int main(void){
             break;
         }
         ast = all();
-        if(syntax_error == TRUE){
-            syntax_error = FALSE;
-            ast = NULL;
+        if(lexical_error == TRUE){
+            while(lookahead.type != NEW_LINE){scanToken();}
             continue;
         }
-        if(lexical_error == TRUE){
-            while(yylex() != NEW_LINE){}
-            lexical_error = FALSE;
+        if(syntax_error == TRUE){
+            while(lookahead.type != NEW_LINE){scanToken();}
             continue;
         }
         printEval();
@@ -86,11 +82,15 @@ void printEval(){
     return;
 }
 
-void syntaxError(){
-    printf("Syntax Error in line #%d: Unexpected token %s\n", yylineno - 1, error_str);
+void syntaxError(char* cause){
+    // 이미 lexical_error가 출력 되었으면 syntax error 출력 생략
+    if(lexical_error == TRUE){
+        return;
+    }
+    printf("Syntax Error in line #%d: Unexpected token %s in %s expression.\n", lineno, error_str, cause);
 }
 void runtimeError(){
-    printf("Runtime Error in line #%d: ", yylineno - 1);
+    printf("Runtime Error in line #%d: ", lineno);
 }
 void printAST(Node* ast){
     int queueSize = 0;

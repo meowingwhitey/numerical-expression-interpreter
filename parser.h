@@ -32,7 +32,6 @@ typedef struct Token{
 typedef struct TreeNode {
     Token token;
     struct TreeNode* left;
-    // sub 연산용
     struct TreeNode* middle;
     struct TreeNode* right;
 }Node;
