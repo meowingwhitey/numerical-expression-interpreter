@@ -2,3 +2,4 @@
 lex-sample/
 .vscode/
 *.o
+lex.yy.c
