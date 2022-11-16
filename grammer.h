@@ -90,7 +90,6 @@ Node* all(){
 
 Node* restAll(){
     if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
-    //printf("%s: %s\n", "A\'", yytext);
     /* = A */
     if(lookahead.type == TOKEN_ASSIGN){
         Node* op = createNode(lookahead);
@@ -127,7 +126,6 @@ Node* restAll(){
 
 Node* expr(){
     if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
-    //printf("%s: %s\n", "E", yytext);
     /* T E’ */
     Node* t = term();
     if(t == NULL){
@@ -148,7 +146,6 @@ Node* expr(){
 
 Node* restExpr(){
     if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
-    //printf("%s: %s\n", "E\'", yytext);
     /* + T E' | -  T E' */
     if(lookahead.type == TOKEN_ADD || lookahead.type == TOKEN_SUB){
         TokenType op_type = lookahead.type;
@@ -182,13 +179,11 @@ Node* restExpr(){
 Node* term(){
     if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
     /* F T' */
-    //printf("%s: %s\n", "T", yytext);
     Node* f = factor();
     if(f == NULL){
         /* if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("factor"); } */
         return NULL;
     }
-    //printf("[*] FACTOR: 0x%X, %d\n", f, f->token.type);
     Node* rt = restTerm();
     if(rt == NULL){
         return f;
@@ -198,13 +193,11 @@ Node* term(){
         temp = temp->left;
     }
     temp->left = f;    
-    //printf("[*] RT: 0x%X, %d\n", rt, rt->token.type);
     return rt;
 }
 
 Node* restTerm(){
     if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
-    //printf("%s: %s\n", "T\'", yytext);
     /* * F T' | / F T' */
     if(lookahead.type == TOKEN_MUL || lookahead.type == TOKEN_DIV){
         TokenType op_type = lookahead.type;
@@ -237,7 +230,6 @@ Node* restTerm(){
 
 Node* factor(){
     if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
-    //printf("%s: %s\n", "F", yytext);
     /* id */
     if(lookahead.type == TOKEN_ID){
         Node* num = createNode(lookahead);
@@ -257,7 +249,6 @@ Node* factor(){
 
 Node* restFactor(){
     if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
-    //printf("%s: %s\n", "F\'", yytext);
     /* ( A ) */
     if(lookahead.type == TOKEN_LP){
         scanToken();
@@ -272,7 +263,6 @@ Node* restFactor(){
     }
     /* inum | fnum */
     else if(lookahead.type == TOKEN_INTEGER || lookahead.type == TOKEN_REAL){
-        //printf("%s: %s\n", "F", yytext);
         Node* num = createNode(lookahead);
         scanToken();
         return num;
@@ -307,7 +297,6 @@ Node* restFactor(){
     }
     /* sub(A, E, E) */
     else if(lookahead.type == TOKEN_SUB_STRING){
-        //printf("[*]sub(A, E, E): %s\n", yytext);
         Node* sub_str = createNode(lookahead);
         scanToken();
         //lookahead가 "("가 아닌 경우 
@@ -317,12 +306,10 @@ Node* restFactor(){
         }
         scanToken();
         Node* a = all();
-        //scanToken();
         if(a == NULL){
             if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }
-        //printf("[*]sub(A, %d\n", a->token.type);
         sub_str->left = a;
         //lookahead가 ","가 아닌 경우 
         if(strcmp(yytext, ",") != 0 ){

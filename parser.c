@@ -17,13 +17,15 @@ int symbol_table_size = 0;
 Node* ast;
 int syntax_error = FALSE;
 int lexical_error = FALSE;
+int runtime_error = FALSE;
 int char_pos = 0;
 int lineno = 0;
 char error_str[MAX_LINE_LENGTH];
 
 int main(void){
     while(TRUE){
-        lexical_error = FALSE; syntax_error = FALSE;
+        lexical_error = FALSE; 
+        syntax_error = FALSE; runtime_error = FALSE;
         char_pos = 0; lineno ++;
         printf(">");
         scanToken();
@@ -90,6 +92,7 @@ void syntaxError(char* cause){
     printf("Syntax Error in line #%d: Unexpected token %s in %s expression.\n", lineno, error_str, cause);
 }
 void runtimeError(){
+    runtime_error = TRUE;
     printf("Runtime Error in line #%d: ", lineno);
 }
 void printAST(Node* ast){
@@ -168,7 +171,7 @@ const char* TOKEN_TYPE_STRING(TokenType type){
         case TOKEN_REAL: return "REAL"; break;
         case TOKEN_STRING: return "STRING"; break;
         case TOKEN_ID: return "VARIABLE"; break;
-        default: runtimeError(); printf("wrong variable assign.\n"); break;
+        default: runtimeError(); printf("wrong variable assign.\n"); return NULL; break;
     }
     return NULL;
 }
