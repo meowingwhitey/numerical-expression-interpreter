@@ -31,6 +31,8 @@ extern Symbol symbol_table[MAX_TABLE_SIZE];
 extern int symbol_table_size;
 extern Node* ast;
 extern int syntax_error;
+extern char error_str[MAX_LINE_LENGTH];
+extern int lineno;
 
 Node* all(){
     if(lookahead.type == NEW_LINE || syntax_error == TRUE){ return NULL; }
@@ -96,7 +98,10 @@ Node* restAll(){
         scanToken();
         Node* a = all();
         if(a == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("="); }
+            if(syntax_error == FALSE) { 
+                syntax_error = TRUE; 
+                printf("Syntax Error in line #%d: %s operator needs rval.\n", lineno, "=");
+            }
             return NULL;
         }
         op->right = a;
@@ -155,8 +160,8 @@ Node* restExpr(){
         if(t == NULL){
             if(syntax_error == FALSE) { 
                 syntax_error = TRUE; 
-                if(op_type == TOKEN_ADD){ syntaxError("+"); }
-                else{ syntaxError("-"); }
+                if(op_type == TOKEN_ADD){ printf("Syntax Error in line #%d: %s operator needs rval.\n", lineno, "+"); }
+                else{ printf("Syntax Error in line #%d: %s operator needs rval.\n", lineno, "-"); }
             }
             return NULL;
         }
@@ -207,8 +212,8 @@ Node* restTerm(){
         if(f == NULL){
             if(syntax_error == FALSE) { 
                 syntax_error = TRUE; 
-                if(op_type == TOKEN_MUL){ syntaxError("*"); }
-                else{ syntaxError("/"); }
+                if(op_type == TOKEN_MUL){ printf("Syntax Error in line #%d: %s operator needs rval.\n", lineno, "*"); }
+                else{ printf("Syntax Error in line #%d: %s operator needs rval.\n", lineno, "/"); }
             }
             return NULL;
         }
@@ -277,7 +282,10 @@ Node* restFactor(){
         scanToken();
         Node* f = factor();
         if(f == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("-"); }
+            if(syntax_error == FALSE) { 
+                syntax_error = TRUE; 
+                printf("Syntax Error in line #%d: %s operator needs rval.\n", lineno, "-");
+            }
             return NULL;
         }
         sub->right = f;
@@ -289,7 +297,10 @@ Node* restFactor(){
         scanToken();
         Node* f = factor();
         if(f == NULL){
-            if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("+"); }
+            if(syntax_error == FALSE) { 
+                syntax_error = TRUE; 
+                printf("Syntax Error in line #%d: %s operator needs rval.\n", lineno, "+");
+            }
             return NULL;
         }
         add->right = f;

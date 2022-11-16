@@ -24,7 +24,7 @@
 \n { return NEW_LINE; }
 [ \t] { char_pos += strlen(yytext); };
 <<EOF>> { return END_OF_FILE; }
-\"([^\\\"]|\\.)*\" { 
+\"([^"]|\\\")*\" { 
   /* STRING */ 
   int size = strlen(yytext);
   strncpy(yytext, yytext + 1, size - 2);

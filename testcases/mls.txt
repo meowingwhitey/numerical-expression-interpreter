@@ -1,0 +1,5 @@
+"this is a \\
+multiple line\\
+string"
+a = "line1 \\
+line2"
