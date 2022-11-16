@@ -328,8 +328,8 @@ Node* restFactor(){
             return NULL;
         }
         scanToken();
-        Node* expr1 = expr();
-        if(expr1 == NULL){
+        Node* a1 = all();
+        if(a1 == NULL){
             if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }
@@ -339,8 +339,8 @@ Node* restFactor(){
             return NULL;
         }    
         scanToken(); 
-        Node* expr2 = expr();
-        if(expr2 == NULL){
+        Node* a2 = all();
+        if(a2 == NULL){
             if(syntax_error == FALSE) { syntax_error = TRUE; syntaxError("sub(STRING, INT, INT)"); }
             return NULL;
         }
@@ -350,7 +350,7 @@ Node* restFactor(){
             return NULL;
         }
         scanToken();
-        sub_str->middle = expr1; sub_str->right = expr2;
+        sub_str->middle = a1; sub_str->right = a2;
         return sub_str;
     }
     else{ /* syntax_error = TRUE; syntaxError("factor"); */ return NULL; }
