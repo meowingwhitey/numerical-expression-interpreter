@@ -44,7 +44,6 @@ typedef struct Symbol {
 Node* createNode();
 
 void printEval();
-void printToken(Token token);
 
 void scanToken();
 
@@ -62,4 +61,3 @@ const char* TOKEN_TYPE_STRING(TokenType type);
 
 /* malloc free 모음 */
 void finalize();
-void setLookahead(TokenType type, Value value);

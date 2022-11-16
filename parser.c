@@ -3,7 +3,7 @@
 #include<string.h>
 #include<math.h>
 #include "parser.h"
-#include "grammer.h"
+#include "grammar.h"
 #include "evaluate.h"
 #include "queue.h"
 
