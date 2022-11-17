@@ -21,6 +21,7 @@
 [A-Za-z]+[A-Za-z0-9]* { /* IDENTIFIER */ char_pos += strlen(yytext); return TOKEN_ID; }
 \$ast { printAST(ast); }
 \$symbol { printSymbol(); }
+\\\n ;
 \n { return NEW_LINE; }
 [ \t] { char_pos += strlen(yytext); };
 <<EOF>> { return END_OF_FILE; }
